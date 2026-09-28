@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSAC 2026 • Okul Takım Başvuru ve Aday Yönetim Sistemi</title>
+<meta name="description" content="NASA Space Apps Challenge 2026 okul içi ekip başvuru ve aday yönetim sistemi.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2322d3ee' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%2322d3ee'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='5' fill='none' stroke='%233b82f6' stroke-width='1.5' transform='rotate(-20 16 16)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        space: {950:'#030613',900:'#060B1F',800:'#0B1230',700:'#131B45'},
+        neon:'#22D3EE'
+      },
+      fontFamily: {
+        display:['Space Grotesk','sans-serif'],
+        body:['Inter','sans-serif'],
+        mono:['JetBrains Mono','monospace']
+      }
+    }
+  }
+}
+</script>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#030613;color:#E2E8F0;font-family:Inter,sans-serif;overflow-x:hidden}
+h1,h2,h3,h4,.font-display{font-family:'Space Grotesk',sans-serif}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#060B1F}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#0ea5e9,#2563eb);border-radius:8px;border:2px solid #060B1F}
+::selection{background:rgba(34,211,238,.3)}
+.glass{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
+.glass-strong{background:rgba(11,18,48,.72);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.1)}
+.gradient-text{background:linear-gradient(135deg,#fff 10%,#7DD3FC 55%,#22D3EE 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bg-grid{background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%,black 30%,transparent 75%);mask-image:radial-gradient(ellipse 90% 70% at 50% 30%,black 30%,transparent 75%)}
+.btn-primary{background:linear-gradient(135deg,#0EA5E9,#2563EB);color:#fff;font-weight:600;border-radius:12px;padding:12px 24px;display:inline-flex;align-items:center;gap:8px;transition:.25s;border:1px solid rgba(255,255,255,.15);box-shadow:0 8px 30px -8px rgba(14,165,233,.5)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px -8px rgba(14,165,233,.65)}
+.btn-primary:disabled{opacity:.5;transform:none;cursor:not-allowed}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#E2E8F0;font-weight:500;border-radius:12px;padding:12px 22px;display:inline-flex;align-items:center;gap:8px;transition:.25s}
+.btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(34,211,238,.4)}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#FCA5A5;border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;transition:.2s}
+.btn-danger:hover{background:rgba(239,68,68,.22)}
+.btn-success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#86EFAC;border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;transition:.2s}
+.btn-success:hover{background:rgba(34,197,94,.22)}
+.field{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 15px;color:#fff;font-size:14px;outline:none;transition:.2s}
+.field::placeholder{color:#475569}
+.field:focus{border-color:#22D3EE;box-shadow:0 0 0 3px rgba(34,211,238,.12);background:rgba(255,255,255,.06)}
+select.field option{background:#0B1230;color:#fff}
+label.lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#94A3B8;margin-bottom:7px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:1px solid}
+.b-pending{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:#FCD34D}
+.b-accepted{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86EFAC}
+.b-rejected{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#FCA5A5}
+.b-waitlist{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.35);color:#93C5FD}
+.dot{width:7px;height:7px;border-radius:99px}
+.reveal{opacity:0;transform:translateY(28px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.animate-float{animation:float 5s ease-in-out infinite}
+@keyframes orbitSpin{to{transform:rotate(360deg)}}
+.orbit-ring{animation:orbitSpin 18s linear infinite}
+.orbit-ring2{animation:orbitSpin 30s linear infinite reverse}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.marquee-track{display:flex;width:max-content;animation:marquee 30s linear infinite}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-box{animation:modalIn .32s cubic-bezier(.16,1,.3,1)}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.toast{animation:toastIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 24px -6px rgba(34,211,238,.5)}50%{box-shadow:0 0 44px -4px rgba(34,211,238,.75)}}
+.glow-pulse{animation:pulseGlow 2.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.blink{animation:blink 1.4s infinite}
+.pill{padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);cursor:pointer;transition:.2s;color:#CBD5E1;user-select:none}
+.pill:hover{border-color:rgba(34,211,238,.5);color:#fff}
+.pill.active{background:linear-gradient(135deg,rgba(14,165,233,.25),rgba(37,99,235,.25));border-color:#22D3EE;color:#fff;box-shadow:0 0 18px -4px rgba(34,211,238,.5)}
+.skill-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:#A5F3FC;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px}
+.skill-tag button{opacity:.7}.skill-tag button:hover{opacity:1;color:#fff}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:99px;background:linear-gradient(90deg,#0EA5E9 var(--p,50%),rgba(255,255,255,.1) var(--p,50%));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:#fff;border:3px solid #0EA5E9;cursor:pointer;box-shadow:0 0 14px rgba(34,211,238,.6)}
+table.admin-table{width:100%;border-collapse:collapse;font-size:13.5px}
+table.admin-table th{text-align:left;padding:12px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;cursor:pointer;user-select:none}
+table.admin-table th:hover{color:#22D3EE}
+table.admin-table td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+table.admin-table tbody tr{transition:.2s}
+table.admin-table tbody tr:hover{background:rgba(34,211,238,.04)}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;color:#94A3B8;transition:.2s;cursor:pointer;border:1px solid transparent}
+.sidebar-link:hover{color:#fff;background:rgba(255,255,255,.05)}
+.sidebar-link.active{color:#fff;background:linear-gradient(135deg,rgba(14,165,233,.18),rgba(37,99,235,.18));border-color:rgba(34,211,238,.25)}
+.code-block{background:#070C22;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}
+.code-block pre{padding:20px;overflow:auto;max-height:520px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#CBD5E1;white-space:pre}
+.toggle{position:relative;width:46px;height:26px;background:rgba(255,255,255,.1);border-radius:99px;cursor:pointer;transition:.25s;border:1px solid rgba(255,255,255,.12)}
+.toggle.on{background:linear-gradient(135deg,#0EA5E9,#2563EB)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:99px;transition:.25s}
+.toggle.on::after{left:22px}
+#applicantDrawer{transition:transform .45s cubic-bezier(.16,1,.3,1)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.faq-item.open .faq-a{max-height:220px}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-arrow{transition:.3s}
+.stat-card{transition:.3s}
+.stat-card:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.3);box-shadow:0 18px 40px -18px rgba(34,211,238,.35)}
+.role-card{transition:.35s}
+.role-card:hover{transform:translateY(-6px);border-color:rgba(34,211,238,.4);box-shadow:0 24px 50px -20px rgba(34,211,238,.4)}
+.cd-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;min-width:68px;padding:10px 8px;text-align:center;backdrop-filter:blur(10px)}
+.level-dot{width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.12)}
+.level-dot.f{background:#22D3EE;box-shadow:0 0 8px rgba(34,211,238,.7)}
+.tl-dot{width:12px;height:12px;border-radius:99px;border:2px solid #1E293B;background:#334155}
+.tl-dot.done{background:#22D3EE;border-color:#22D3EE;box-shadow:0 0 12px rgba(34,211,238,.7)}
+.tl-dot.bad{background:#EF4444;border-color:#EF4444}
+input[type=checkbox].chk{width:18px;height:18px;accent-color:#0EA5E9;cursor:pointer}
+#preloader{transition:opacity .6s}
+.spinner{width:56px;height:56px;border-radius:99px;border:3px solid rgba(34,211,238,.15);border-top-color:#22D3EE;animation:orbitSpin 1s linear infinite}
+@media(max-width:768px){.cd-box{min-width:60px}}
+</style>
+</head>
+<body>
+
+<!-- PRELOADER -->
+<div id="preloader" class="fixed inset-0 z-[200] bg-[#030613] flex flex-col items-center justify-center gap-5">
+  <div class="spinner"></div>
+  <div class="font-display font-bold tracking-[.3em] text-sm text-cyan-300">NSAC • 2026</div>
+  <div class="text-xs text-slate-500 font-mono">Sistem başlatılıyor...</div>
+</div>
+
+<!-- BACKGROUND -->
+<canvas id="starCanvas" class="fixed inset-0 z-0 pointer-events-none"></canvas>
+<div class="fixed inset-0 z-0 pointer-events-none">
+  <div class="absolute inset-0 bg-grid"></div>
+  <div class="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-25" style="background:radial-gradient(circle,rgba(37,99,235,.5),transparent 65%)"></div>
+  <div class="absolute top-1/3 -right-52 w-[650px] h-[650px] rounded-full opacity-20" style="background:radial-gradient(circle,rgba(34,211,238,.5),transparent 65%)"></div>
+  <div class="absolute bottom-0 left-1/3 w-[500px] h-[400px] rounded-full opacity-10" style="background:radial-gradient(circle,rgba(168,85,247,.6),transparent 65%)"></div>
+</div>
+
+<!-- TOASTS -->
+<div id="toastContainer" class="fixed top-5 right-5 z-[150] flex flex-col gap-3 w-[min(380px,calc(100vw-2.5rem))]"></div>
+
+<!-- ═══════════ PUBLIC VIEW ═══════════ -->
+<div id="publicView" class="relative z-10">
+
+  <!-- NAV -->
+  <nav id="publicNav" class="fixed top-0 left-0 right-0 z-50 glass-strong border-x-0 border-t-0">
+    <div class="max-w-7xl mx-auto px-5 h-[68px] flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#0EA5E9,#2563EB);box-shadow:0 0 24px -4px rgba(34,211,238,.6)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5" fill="white"/><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-20 12 12)"/></svg>
+        </div>
+        <div>
+          <div class="font-display font-bold text-[15px] leading-none tracking-wide">NSAC <span class="text-cyan-400">2026</span></div>
+          <div class="text-[10px] text-slate-400 tracking-[.18em] uppercase mt-1">Okul Takım Seçmeleri</div>
+        </div>
+      </div>
+      <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#gorev" class="hover:text-cyan-300 transition">Görev</a>
+        <a href="#roller" class="hover:text-cyan-300 transition">Roller</a>
+        <a href="#surec" class="hover:text-cyan-300 transition">Süreç</a>
+        <a href="#sss" class="hover:text-cyan-300 transition">SSS</a>
+        <span class="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-full"><span class="w-2 h-2 rounded-full bg-emerald-400 blink"></span><span id="nav-open-label">Başvurular Açık</span></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="openModal('statusModal')" class="hidden sm:inline-flex btn-ghost !py-2.5 !px-4 text-sm">Sorgula</button>
+        <a href="#basvuru" class="btn-primary !py-2.5 !px-5 text-sm">Hemen Başvur
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <button onclick="showLogin()" title="Admin Paneli" class="w-10 h-10 rounded-xl glass flex items-center justify-center hover:border-cyan-400/50 transition">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+        </button>
+        <button id="mobileMenuBtn" class="lg:hidden w-10 h-10 rounded-xl glass flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobileMenu" class="hidden lg:hidden border-t border-white/10 px-5 py-4 flex flex-col gap-3 text-sm font-medium bg-[#060B1F]/95">
+      <a href="#gorev" class="py-2 text-slate-300">Görev</a>
+      <a href="#roller" class="py-2 text-slate-300">Roller</a>
+      <a href="#surec" class="py-2 text-slate-300">Süreç</a>
+      <a href="#sss" class="py-2 text-slate-300">SSS</a>
+      <button onclick="openModal('statusModal')" class="btn-ghost justify-center">Başvuru Sorgula</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="pt-[130px] pb-10 px-5 max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs font-semibold tracking-widest text-cyan-300 uppercase mb-6">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 blink"></span> Okul İçi Seçmeler • 2026 • 48 Saat
+        </div>
+        <h1 class="font-display font-bold text-[clamp(2.2rem,5.5vw,3.8rem)] leading-[1.05] tracking-tight">
+          NASA Space Apps<br><span class="gradient-text">Challenge 2026</span><br>Ekibine Katıl.
+        </h1>
+        <p class="mt-6 text-slate-400 text-[15.5px] leading-relaxed max-w-xl">Okulumuzu global hackathon'da temsil edecek çekirdek ekip kuruluyor. Yazılım, veri bilimi, tasarım veya hikaye anlatımı — yerini seç, başvurunu gönder, <span class="text-slate-200 font-medium">WhatsApp üzerinden manuel bilgilendirme</span> ile sürecini takip et.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#basvuru" class="btn-primary">Başvuru Formuna Git
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          </a>
+          <button onclick="openModal('statusModal')" class="btn-ghost">Başvuru Durumu Sorgula</button>
+        </div>
+        <div class="mt-8">
+          <div class="text-[11px] uppercase tracking-[.2em] text-slate-500 font-semibold mb-3">Son Başvuru Tarihine Kalan</div>
+          <div class="flex gap-3">
+            <div class="cd-box"><div id="cd-days" class="font-display font-bold text-2xl text-white">00</div><div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Gün</div></div>
+            <div class="cd-box"><div id="cd-hours" class="font-display font-bold text-2xl text-white">00</div><div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Saat</div></div>
+            <div class="cd-box"><div id="cd-mins" class="font-display font-bold text-2xl text-cyan-300">00</div><div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Dakika</div></div>
+            <div class="cd-box"><div id="cd-secs" class="font-display font-bold text-2xl text-cyan-300">00</div><div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Saniye</div></div>
+          </div>
+          <div id="deadline-label" class="mt-3 text-xs text-slate-500 font-mono"></div>
+        </div>
+        <div class="mt-7 flex items-center gap-4">
+          <div class="flex -space-x-3" id="hero-avatars"></div>
+          <div class="text-sm"><span id="hero-total" class="font-bold text-white">0</span> <span class="text-slate-400">başvuru alındı • Kontenjan sınırlı</span></div>
+        </div>
+      </div>
+
+      <!-- HERO VISUAL -->
+      <div class="relative hidden md:block">
+        <div class="glass rounded-3xl p-7 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-72 h-72 opacity-30 pointer-events-none" style="background:radial-gradient(circle,rgba(34,211,238,.4),transparent 65%)"></div>
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            </div>
+            <div class="font-mono text-[11px] text-slate-500">MISSION_CONTROL // NSAC-26</div>
+          </div>
+          <div class="relative w-52 h-52 mx-auto my-4">
+            <div class="absolute inset-0 rounded-full" style="background:radial-gradient(circle at 32% 30%,#38BDF8,#1D4ED8 55%,#0B1230 100%);box-shadow:0 0 60px -10px rgba(56,189,248,.6), inset -18px -18px 40px rgba(0,0,0,.5)"></div>
+            <div class="absolute inset-[-22px] rounded-full border border-cyan-400/20 orbit-ring"><div class="absolute -top-1.5 left-1/2 w-3 h-3 rounded-full bg-cyan-300" style="box-shadow:0 0 12px #22D3EE"></div></div>
+            <div class="absolute inset-[-48px] rounded-full border border-dashed border-blue-500/25 orbit-ring2"><div class="absolute top-1/2 -right-1.5 w-2.5 h-2.5 rounded-full bg-blue-400"></div></div>
+            <div class="absolute inset-0 flex items-center justify-center"><div class="text-center"><div class="font-display font-bold text-white text-lg tracking-widest">NSAC</div><div class="font-mono text-[10px] text-cyan-200 tracking-[.3em]">2026</div></div></div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mt-6 font-mono">
+            <div class="glass rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500">BAŞVURU</div><div id="tele-total" class="text-lg font-bold text-white">--</div></div>
+            <div class="glass rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500">KABUL</div><div id="tele-accepted" class="text-lg font-bold text-emerald-300">--</div></div>
+            <div class="glass rounded-xl p-3 text-center"><div class="text-[10px] text-slate-500">DOLULUK</div><div id="tele-rate" class="text-lg font-bold text-cyan-300">--</div></div>
+          </div>
+          <div class="mt-4 font-mono text-[11px] bg-black/40 border border-white/10 rounded-xl p-3 text-slate-400">
+            <span class="text-cyan-400">$</span> SELECT * FROM applications WHERE status=<span class="text-emerald-300">'accepted'</span> <span class="blink text-cyan-300">▊</span>
+          </div>
+        </div>
+        <div class="absolute -left-5 top-10 glass-strong rounded-2xl px-4 py-3 animate-float flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6EE7B7" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div><div class="text-xs font-bold">Kabul bildirimi</div><div class="text-[11px] text-slate-400">WhatsApp • manuel</div></div>
+        </div>
+        <div class="absolute -right-4 bottom-16 glass-strong rounded-2xl px-4 py-3 animate-float flex items-center gap-3" style="animation-delay:1.4s">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#67E8F9" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg></div>
+          <div><div class="text-xs font-bold">48 saat hackathon</div><div class="text-[11px] text-slate-400">Gerçek NASA verileri</div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MARQUEE -->
+  <div class="border-y border-white/8 bg-white/[.02] py-4 overflow-hidden mt-6" style="border-color:rgba(255,255,255,.07)">
+    <div class="marquee-track gap-10 font-mono text-[13px] tracking-[.25em] text-slate-500 uppercase" id="marquee"></div>
+  </div>
+
+  <!-- LIVE STATS -->
+  <section class="max-w-7xl mx-auto px-5 py-14">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass rounded-2xl p-6 stat-card reveal"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Toplam Başvuru</div><div id="stat-total" class="font-display font-bold text-4xl mt-2 text-white">0</div><div class="text-xs text-cyan-300 mt-2 font-mono">● canlı veri</div></div>
+      <div class="glass rounded-2xl p-6 stat-card reveal"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Kabul Edilen</div><div id="stat-accepted" class="font-display font-bold text-4xl mt-2 text-emerald-300">0</div><div class="text-xs text-slate-500 mt-2">çekirdek ekip havuzu</div></div>
+      <div class="glass rounded-2xl p-6 stat-card reveal"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Bekleyen İnceleme</div><div id="stat-pending" class="font-display font-bold text-4xl mt-2 text-amber-300">0</div><div class="text-xs text-slate-500 mt-2">değerlendirme sırasında</div></div>
+      <div class="glass rounded-2xl p-6 stat-card reveal"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Aktif Rol</div><div id="stat-roles" class="font-display font-bold text-4xl mt-2 text-white">6</div><div class="text-xs text-slate-500 mt-2">farklı uzmanlık alanı</div></div>
+    </div>
+  </section>
+
+  <!-- MISSION -->
+  <section id="gorev" class="max-w-7xl mx-auto px-5 py-10 scroll-mt-24">
+    <div class="reveal">
+      <div class="text-xs font-bold tracking-[.25em] text-cyan-400 uppercase mb-3">// Görev Tanımı</div>
+      <h2 class="font-display font-bold text-3xl md:text-4xl">Dünyanın en büyük hackathon'unda <span class="gradient-text">okulumuzu temsil et.</span></h2>
+      <p class="text-slate-400 mt-4 max-w-2xl">NASA Space Apps Challenge; NASA verilerini kullanarak 48 saatte çözüm üretmeni bekleyen global bir inovasyon maratonudur. Biz okul olarak 2–6 kişilik çevik ekipler kuruyoruz.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4 mt-8">
+      <div class="glass rounded-2xl p-7 reveal"><div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mb-5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h3 class="font-display font-bold text-lg">48 Saatlik Maraton</h3><p class="text-sm text-slate-400 mt-2 leading-relaxed">Hafta sonu süren yoğun üretim kampı. Fikirden prototipe, sunumdan demoya tam döngü deneyim.</p></div>
+      <div class="glass rounded-2xl p-7 reveal"><div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center mb-5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div><h3 class="font-display font-bold text-lg">Gerçek NASA Verileri</h3><p class="text-sm text-slate-400 mt-2 leading-relaxed">Uydu görüntüleri, iklim setleri ve açık bilim API'leri ile çalış. Veriye dayalı çözüm üret.</p></div>
+      <div class="glass rounded-2xl p-7 reveal"><div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center mb-5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="1.8"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5L7 22l5-3 5 3-1.5-9.5"/></svg></div><h3 class="font-display font-bold text-lg">Global Jüri & Sertifika</h3><p class="text-sm text-slate-400 mt-2 leading-relaxed">Projeni dünyaya sun, uluslararası jüriden geri bildirim al ve portföyüne prestijli bir iş ekle.</p></div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display">◈</div><div class="text-xs font-semibold mt-2">Astrofizik</div></div>
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display text-cyan-300">◎</div><div class="text-xs font-semibold mt-2">İklim & Dünya</div></div>
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display text-blue-300">⬡</div><div class="text-xs font-semibold mt-2">Yapay Zeka</div></div>
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display text-violet-300">▣</div><div class="text-xs font-semibold mt-2">Mobil / Web</div></div>
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display text-emerald-300">✦</div><div class="text-xs font-semibold mt-2">Oyun & Simülasyon</div></div>
+      <div class="glass rounded-xl p-4 text-center reveal"><div class="text-2xl font-display text-amber-300">⬢</div><div class="text-xs font-semibold mt-2">Donanım / IoT</div></div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section id="roller" class="max-w-7xl mx-auto px-5 py-14 scroll-mt-24">
+    <div class="reveal flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div><div class="text-xs font-bold tracking-[.25em] text-cyan-400 uppercase mb-3">// Ekip Rolleri</div>
+      <h2 class="font-display font-bold text-3xl md:text-4xl">Hangi rolde <span class="gradient-text">parlıyorsun?</span></h2></div>
+      <p class="text-slate-400 text-sm max-w-md">Birden fazla rol seçebilirsin. Dengeli ekipler için her rolden en az bir kişi hedefliyoruz.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8" id="roleCards"></div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="surec" class="max-w-7xl mx-auto px-5 py-10 scroll-mt-24">
+    <div class="glass rounded-3xl p-8 md:p-12 relative overflow-hidden reveal">
+      <div class="absolute inset-0 bg-grid opacity-60"></div>
+      <div class="relative">
+        <div class="text-xs font-bold tracking-[.25em] text-cyan-400 uppercase mb-3">// Başvuru Süreci</div>
+        <h2 class="font-display font-bold text-3xl">Başvurudan hackathon'a <span class="gradient-text">5 adım.</span></h2>
+        <div class="grid md:grid-cols-5 gap-6 mt-10">
+          <div class="relative"><div class="w-11 h-11 rounded-xl font-display font-bold flex items-center justify-center text-white" style="background:linear-gradient(135deg,#0EA5E9,#2563EB)">01</div><h4 class="font-bold mt-4 text-[15px]">Başvurunu Gönder</h4><p class="text-xs text-slate-400 mt-2 leading-relaxed">2 dakikada formu doldur, başvuru kodunu al.</p></div>
+          <div class="relative"><div class="w-11 h-11 rounded-xl font-display font-bold flex items-center justify-center glass text-cyan-300">02</div><h4 class="font-bold mt-4 text-[15px]">Değerlendirme</h4><p class="text-xs text-slate-400 mt-2 leading-relaxed">Koordinatör başvurunu inceler ve puanlar.</p></div>
+          <div class="relative"><div class="w-11 h-11 rounded-xl font-display font-bold flex items-center justify-center glass text-cyan-300">03</div><h4 class="font-bold mt-4 text-[15px]">WhatsApp Bilgilendirme</h4><p class="text-xs text-slate-400 mt-2 leading-relaxed">Kabul / red kararı sana manuel olarak WhatsApp'tan iletilir.</p></div>
+          <div class="relative"><div class="w-11 h-11 rounded-xl font-display font-bold flex items-center justify-center glass text-cyan-300">04</div><h4 class="font-bold mt-4 text-[15px]">Ekip Kurulumu</h4><p class="text-xs text-slate-400 mt-2 leading-relaxed">Rol dengesiyle 2–6 kişilik takımlar oluşturulur.</p></div>
+          <div class="relative"><div class="w-11 h-11 rounded-xl font-display font-bold flex items-center justify-center glass text-cyan-300">05</div><h4 class="font-bold mt-4 text-[15px]">Hackathon</h4><p class="text-xs text-slate-400 mt-2 leading-relaxed">48 saat üret, sun, global jüride yarış.</p></div>
+        </div>
+        <div class="mt-8 flex items-start gap-3 bg-amber-500/8 border border-amber-500/25 rounded-xl p-4" style="background:rgba(251,191,36,.06)">
+          <svg class="shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <p class="text-[13px] text-amber-200/90 leading-relaxed"><span class="font-bold">Önemli:</span> Sistem otomatik WhatsApp mesajı göndermez. Karar sonrası koordinatör sana manuel olarak ulaşır. Telefon numaranı doğru yazdığından emin ol.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section id="basvuru" class="max-w-7xl mx-auto px-5 py-14 scroll-mt-24">
+    <div class="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+      <div class="lg:sticky lg:top-24 space-y-4 reveal">
+        <div><div class="text-xs font-bold tracking-[.25em] text-cyan-400 uppercase mb-3">// Başvuru Formu</div>
+        <h2 class="font-display font-bold text-3xl">Yerini <span class="gradient-text">ayırt.</span></h2>
+        <p class="text-slate-400 text-sm mt-3 leading-relaxed">Bilgilerin güvenli şekilde veritabanına kaydedilir ve yalnızca koordinatör tarafından görüntülenir.</p></div>
+        <div class="glass rounded-2xl p-5">
+          <div class="flex justify-between text-xs font-semibold mb-2"><span class="text-slate-400">Form Tamamlanma</span><span id="formProgress" class="text-cyan-300 font-mono">0%</span></div>
+          <div class="h-2 rounded-full bg-white/8 overflow-hidden" style="background:rgba(255,255,255,.07)"><div id="formProgressBar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,#0EA5E9,#22D3EE)"></div></div>
+        </div>
+        <div class="glass rounded-2xl p-5 space-y-4 text-sm">
+          <div class="flex gap-3"><span class="text-cyan-400 font-mono font-bold">→</span><p class="text-slate-300">Başvurunu gönder, <span class="font-mono text-cyan-300">NSAC26-XXXX</span> kodunu not et.</p></div>
+          <div class="flex gap-3"><span class="text-cyan-400 font-mono font-bold">→</span><p class="text-slate-300">Durumunu bu siteden dilediğin zaman sorgula.</p></div>
+          <div class="flex gap-3"><span class="text-cyan-400 font-mono font-bold">→</span><p class="text-slate-300">Karar sonrası WhatsApp'tan bilgilendirilmeyi bekle.</p></div>
+        </div>
+        <div class="rounded-2xl p-5 border border-cyan-500/25" style="background:linear-gradient(135deg,rgba(14,165,233,.1),rgba(37,99,235,.08))">
+          <div class="text-xs font-bold uppercase tracking-widest text-cyan-300 mb-2">Güvenlik</div>
+          <div class="text-xs text-slate-400 leading-relaxed">XSS koruması • Spam filtresi • Hız limiti • Doğrulanmış kayıt. Verilerin KVKK kapsamında korunur.</div>
+        </div>
+      </div>
+
+      <div class="glass rounded-3xl p-6 md:p-9 reveal">
+        <div id="formClosedBanner" class="hidden mb-6 rounded-xl border border-red-500/30 p-5 text-center" style="background:rgba(239,68,68,.07)">
+          <div class="font-display font-bold text-red-300">Başvurular şu anda kapalı.</div>
+          <div class="text-sm text-slate-400 mt-1">Son başvuru tarihi geçti veya alımlar koordinatör tarafından durduruldu.</div>
+        </div>
+        <form id="applicationForm" novalidate>
+          <div id="formFields" class="space-y-8">
+            <div>
+              <h3 class="font-display font-bold text-lg flex items-center gap-3"><span class="w-8 h-8 rounded-lg text-sm flex items-center justify-center font-bold" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);color:#67E8F9">1</span>Kişisel Bilgiler</h3>
+              <div class="grid sm:grid-cols-2 gap-4 mt-5">
+                <div><label class="lbl">Ad Soyad *</label><input id="f-name" class="field" placeholder="Adın Soyadın" maxlength="80"></div>
+                <div><label class="lbl">Okul Numarası *</label><input id="f-schoolNo" class="field font-mono" placeholder="örn. 1234" maxlength="20"></div>
+                <div><label class="lbl">E-posta *</label><input id="f-email" type="email" class="field" placeholder="ornek@okul.edu.tr" maxlength="100"></div>
+                <div><label class="lbl">Telefon (WhatsApp) *</label><input id="f-phone" class="field font-mono" placeholder="05__ ___ __ __" maxlength="20"></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-display font-bold text-lg flex items-center gap-3"><span class="w-8 h-8 rounded-lg text-sm flex items-center justify-center font-bold" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);color:#67E8F9">2</span>Akademik</h3>
+              <div class="grid sm:grid-cols-2 gap-4 mt-5">
+                <div><label class="lbl">Sınıf *</label><select id="f-grade" class="field"><option value="">Seçiniz...</option><option>Hazırlık</option><option>9. Sınıf</option><option>10. Sınıf</option><option>11. Sınıf</option><option>12. Sınıf</option></select></div>
+                <div><label class="lbl">Alan / Bölüm *</label><select id="f-department" class="field"><option value="">Seçiniz...</option><option>Fen Lisesi</option><option>Anadolu Lisesi</option><option>Bilişim Teknolojileri</option><option>Elektrik-Elektronik</option><option>Endüstriyel Tasarım</option><option>Diğer</option></select></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-display font-bold text-lg flex items-center gap-3"><span class="w-8 h-8 rounded-lg text-sm flex items-center justify-center font-bold" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);color:#67E8F9">3</span>Rol & Yetenekler</h3>
+              <label class="lbl mt-5">Başvurmak İstediğin Roller * (en az 1)</label>
+              <div id="rolePills" class="flex flex-wrap gap-2"></div>
+              <div class="grid sm:grid-cols-2 gap-4 mt-5">
+                <div>
+                  <label class="lbl">Yetenekler * (en az 2)</label>
+                  <div class="flex gap-2"><input id="skillInput" class="field" placeholder="Python yaz + Enter" maxlength="30"><button type="button" id="skillAdd" class="btn-ghost !px-4 shrink-0">Ekle</button></div>
+                  <div id="skillTags" class="flex flex-wrap gap-2 mt-3"></div>
+                  <div class="flex flex-wrap gap-1.5 mt-3"><span class="text-[11px] text-slate-500 w-full mb-1">Hızlı ekle:</span><button type="button" class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition" data-skill="Python">Python</button><button type="button" class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition" data-skill="JavaScript">JavaScript</button><button type="button" class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition" data-skill="Figma">Figma</button><button type="button" class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition" data-skill="Arduino">Arduino</button><button type="button" class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition" data-skill="Video Edit">Video Edit</button></div>
+                </div>
+                <div>
+                  <label class="lbl">Deneyim Seviyesi *</label>
+                  <div class="glass rounded-xl p-5">
+                    <div class="flex justify-between items-center mb-3"><span id="f-levelLabel" class="font-bold text-cyan-300">Orta</span><span id="f-levelValue" class="font-mono text-sm text-slate-400">3 / 5</span></div>
+                    <input id="f-level" type="range" min="1" max="5" value="3" step="1">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-2 font-mono"><span>Başlangıç</span><span>Uzman</span></div>
+                  </div>
+                  <label class="lbl mt-4">GitHub / Portföy (opsiyonel)</label>
+                  <input id="f-github" class="field font-mono !text-[13px]" placeholder="https://github.com/kullanici" maxlength="200">
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-display font-bold text-lg flex items-center gap-3"><span class="w-8 h-8 rounded-lg text-sm flex items-center justify-center font-bold" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);color:#67E8F9">4</span>Motivasyon & Ekip</h3>
+              <div class="mt-5 space-y-4">
+                <div><div class="flex justify-between items-center"><label class="lbl">Neden bu ekipte olmalısın? *</label><span id="motivationCount" class="text-[11px] font-mono text-slate-500">0 / 1000</span></div><textarea id="f-motivation" rows="4" class="field resize-none" placeholder="Deneyimlerin, hedeflerin ve ekibe katabileceklerin... (min. 50 karakter)" maxlength="1000"></textarea></div>
+                <div><div class="flex justify-between items-center"><label class="lbl">Proje Fikrin (opsiyonel)</label><span id="projectCount" class="text-[11px] font-mono text-slate-500">0 / 600</span></div><textarea id="f-projectIdea" rows="2" class="field resize-none" placeholder="Varsa kısaca bir hackathon fikrinden bahset..." maxlength="600"></textarea></div>
+                <div>
+                  <label class="lbl">Ekip Tercihi *</label>
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <label class="glass rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-cyan-400/40 transition has-[:checked]:border-cyan-400/60" style="border:1px solid rgba(255,255,255,.1)"><input type="radio" name="teamPref" value="solo" checked class="chk"><span><span class="font-semibold text-sm block">Beni bir ekibe yerleştir</span><span class="text-xs text-slate-500">Rol dengeme göre atanırım</span></span></label>
+                    <label class="glass rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-cyan-400/40 transition" style="border:1px solid rgba(255,255,255,.1)"><input type="radio" name="teamPref" value="with-friends" class="chk"><span><span class="font-semibold text-sm block">Arkadaşlarımla katılmak istiyorum</span><span class="text-xs text-slate-500">İsimlerini aşağıya yaz</span></span></label>
+                  </div>
+                  <div id="f-friendsWrap" class="hidden mt-3"><input id="f-friends" class="field" placeholder="Birlikte katılmak istediğin arkadaşların (virgülle ayır)" maxlength="200"></div>
+                </div>
+                <label class="flex items-start gap-3 cursor-pointer text-[13px] text-slate-400 leading-relaxed"><input id="f-kvkk" type="checkbox" class="chk mt-0.5 shrink-0"><span>Başvuru bilgilerimin ekip seçimi amacıyla işlenmesini kabul ediyorum. Karar sonrası <span class="text-slate-200 font-medium">WhatsApp üzerinden manuel olarak</span> bilgilendirileceğimi biliyorum. (KVKK)</span></label>
+                <input id="f-website" type="text" class="hidden" tabindex="-1" autocomplete="off">
+                <button id="submitBtn" type="submit" class="btn-primary w-full justify-center !py-4 text-[15px] glow-pulse"><span id="submitLabel">Başvuruyu Uzaya Gönder</span><svg id="submitSpin" class="hidden animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.2-8.56"/></svg></button>
+                <p class="text-center text-[11px] text-slate-600 font-mono">256-bit güvenli iletim simülasyonu • XSS filtreli • hız limitli</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="sss" class="max-w-4xl mx-auto px-5 py-14 scroll-mt-24">
+    <div class="text-center reveal"><div class="text-xs font-bold tracking-[.25em] text-cyan-400 uppercase mb-3">// SSS</div>
+    <h2 class="font-display font-bold text-3xl">Merak <span class="gradient-text">edilenler.</span></h2></div>
+    <div class="space-y-3 mt-8" id="faqList"></div>
+  </section>
+
+  <!-- CTA -->
+  <section class="max-w-7xl mx-auto px-5 pb-16">
+    <div class="rounded-3xl p-10 md:p-14 text-center relative overflow-hidden reveal" style="background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(37,99,235,.12));border:1px solid rgba(34,211,238,.25)">
+      <div class="absolute inset-0 bg-grid"></div>
+      <div class="relative"><h2 class="font-display font-bold text-3xl md:text-4xl">Hazır mısın, <span class="gradient-text">kaşif?</span></h2><p class="text-slate-400 mt-3">Kontenjan sınırlı. Başvurunu şimdi tamamla, ekibindeki yerini garantile.</p><a href="#basvuru" class="btn-primary mt-7">Hemen Başvur</a></div>
+    </div>
+  </section>
+
+  <footer class="border-t px-5 py-12" style="border-color:rgba(255,255,255,.07);background:rgba(3,6,19,.8)">
+    <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
+      <div><div class="font-display font-bold">NSAC <span class="text-cyan-400">2026</span></div><p class="text-slate-500 text-xs mt-3 leading-relaxed">Okul içi NASA Space Apps Challenge ekip başvuru ve aday yönetim sistemi.</p><p class="text-[11px] text-slate-600 mt-3 border border-white/10 rounded-lg p-2.5">Bu site okul içi organizasyon içindir. NASA'nın resmi sitesi değildir.</p></div>
+      <div><div class="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Hızlı Erişim</div><div class="flex flex-col gap-2.5 text-slate-500"><a href="#gorev" class="hover:text-cyan-300">Görev</a><a href="#roller" class="hover:text-cyan-300">Roller</a><a href="#basvuru" class="hover:text-cyan-300">Başvuru</a><button onclick="openModal('statusModal')" class="text-left hover:text-cyan-300">Durum Sorgula</button></div></div>
+      <div><div class="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Süreç</div><div class="flex flex-col gap-2.5 text-slate-500"><span>Başvuru → İnceleme</span><span>WhatsApp bilgilendirme (manuel)</span><span>Ekip kurulumu → Hackathon</span></div></div>
+      <div><div class="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Koordinatör</div><p class="text-slate-500 text-xs leading-relaxed">Soruların için okul koordinatörüne ulaş. Kabul / red bildirimleri WhatsApp üzerinden manuel yapılır.</p><button onclick="showLogin()" class="btn-ghost !py-2 !px-4 text-xs mt-4">Admin Paneli Girişi</button></div>
+    </div>
+    <div class="max-w-7xl mx-auto mt-10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[11px] text-slate-600 font-mono" style="border-top:1px solid rgba(255,255,255,.06)"><span>© 2026 NSAC Okul Takımı • v2.1.0</span><span>Single-file build • Production: Next.js + FastAPI + PostgreSQL</span></div>
+  </footer>
+</div>
+
+<!-- ═══════════ LOGIN VIEW ═══════════ -->
+<div id="loginView" class="hidden relative z-10 min-h-screen flex items-center justify-center px-5 py-16">
+  <div class="w-full max-w-md">
+    <button onclick="showPublic()" class="btn-ghost !py-2 !px-4 text-sm mb-6">← Siteye Dön</button>
+    <div class="glass-strong rounded-3xl p-8 relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-25" style="background:radial-gradient(circle,rgba(34,211,238,.5),transparent 65%)"></div>
+      <div class="relative">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,#0EA5E9,#2563EB)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+        <h2 class="font-display font-bold text-2xl">Admin Paneli</h2>
+        <p class="text-sm text-slate-400 mt-1">Yalnızca yetkili koordinatörler erişebilir.</p>
+        <form id="loginForm" class="mt-7 space-y-4">
+          <div><label class="lbl">Admin E-posta</label><input id="login-email" type="email" class="field font-mono !text-[13px]" placeholder="admin@okul.edu.tr" autocomplete="username"></div>
+          <div><label class="lbl">Parola</label><div class="relative"><input id="login-password" type="password" class="field pr-12" placeholder="••••••••" autocomplete="current-password"><button type="button" id="login-togglePass" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-300 text-xs font-bold">GÖSTER</button></div></div>
+          <div id="login-error" class="hidden text-[13px] bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3"></div>
+          <div id="login-attempts" class="hidden text-[12px] font-mono text-amber-300"></div>
+          <button type="submit" class="btn-primary w-full justify-center !py-3.5"><span id="loginLabel">Güvenli Giriş Yap</span></button>
+        </form>
+        <div class="mt-6 rounded-xl border border-cyan-500/25 p-4" style="background:rgba(34,211,238,.05)">
+          <div class="flex justify-between items-center mb-2"><span class="text-[11px] font-bold uppercase tracking-widest text-cyan-300">Demo Erişimi</span><button onclick="autofillLogin()" class="text-[11px] font-bold text-cyan-300 hover:text-white border border-cyan-500/40 rounded-lg px-2.5 py-1">Otomatik Doldur</button></div>
+          <div class="font-mono text-[12px] text-slate-300">admin@okul.edu.tr<br>Space2026!</div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-5">
+          <span class="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-slate-500">SHA-256 HASH</span>
+          <span class="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-slate-500">RATE-LIMIT 5x</span>
+          <span class="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-slate-500">SESSION 2H</span>
+          <span class="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-slate-500">ORM + XSS FİLTRE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div id="dashboardView" class="hidden relative z-10 min-h-screen">
+  <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/60 z-40 lg:hidden"></div>
+  <aside id="sidebar" class="fixed left-0 top-0 h-full w-[260px] z-50 glass-strong border-y-0 border-l-0 p-5 flex flex-col gap-2 -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <div class="flex items-center gap-3 px-2 py-3 mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#0EA5E9,#2563EB)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5" fill="white"/></svg></div>
+      <div><div class="font-display font-bold text-sm">NSAC 2026</div><div class="text-[10px] text-cyan-400 font-mono tracking-widest">ADMIN CONSOLE</div></div>
+    </div>
+    <button class="sidebar-link active" data-tab="overview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Genel Bakış</button>
+    <button class="sidebar-link" data-tab="applications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Başvurular <span id="side-pending" class="ml-auto text-[11px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">0</span></button>
+    <button class="sidebar-link" data-tab="teams"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Ekip Oluşturucu</button>
+    <button class="sidebar-link" data-tab="analytics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Analitik</button>
+    <button class="sidebar-link" data-tab="developer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>Geliştirici <span class="ml-auto text-[10px] font-mono text-slate-500">README</span></button>
+    <button class="sidebar-link" data-tab="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Ayarlar</button>
+    <div class="mt-auto space-y-2">
+      <div class="glass rounded-xl p-3.5 flex items-center gap-3"><div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0" style="background:linear-gradient(135deg,#0EA5E9,#2563EB)">A</div><div class="min-w-0"><div id="adminEmailDisplay" class="text-xs font-semibold truncate">admin@okul.edu.tr</div><div class="text-[10px] text-emerald-300 font-mono">● oturum aktif</div></div></div>
+      <button onclick="showPublic()" class="sidebar-link w-full !py-2.5 text-[13px]">Siteyi Görüntüle</button>
+      <button onclick="logout()" class="sidebar-link w-full !py-2.5 text-[13px] !text-red-300 hover:!bg-red-500/10">Çıkış Yap</button>
+    </div>
+  </aside>
+
+  <div class="lg:ml-[260px]">
+    <div class="sticky top-0 z-30 glass-strong border-x-0 border-t-0 px-5 py-3.5 flex items-center gap-4">
+      <button id="sidebarToggle" class="lg:hidden w-10 h-10 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <h2 id="topbarTitle" class="font-display font-bold text-lg">Genel Bakış</h2>
+      <div class="ml-auto flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2 glass rounded-xl px-3.5 py-2.5 w-64"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="topbarSearch" class="bg-transparent outline-none text-sm w-full placeholder:text-slate-600" placeholder="Hızlı ara: isim, ID, e-posta..."></div>
+        <div class="relative w-10 h-10 rounded-xl glass flex items-center justify-center cursor-pointer" onclick="switchAdminTab('applications')" title="Bekleyen başvurular"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span id="notifBadge" class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-amber-500 text-black text-[11px] font-bold flex items-center justify-center">0</span></div>
+      </div>
+    </div>
+
+    <div class="p-5 md:p-8 max-w-[1200px]">
+      <!-- OVERVIEW -->
+      <div id="tab-overview">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div><h3 class="font-display font-bold text-2xl">Hoş geldin, Koordinatör 👋</h3><p class="text-sm text-slate-400 mt-1"><span id="ov-date"></span> • Tüm veriler canlı • <span class="font-mono text-cyan-300">DB: bağlı</span></p></div>
+          <div class="flex gap-2.5"><button onclick="exportCSV()" class="btn-ghost !py-2.5 text-[13px]">CSV Dışa Aktar</button><button onclick="switchAdminTab('teams')" class="btn-primary !py-2.5 text-[13px]">Ekip Kur</button></div>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass rounded-2xl p-5 stat-card"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Toplam Başvuru</div><div id="ov-total" class="font-display font-bold text-3xl mt-1.5">0</div><div id="ov-total-sub" class="text-[11px] text-slate-500 mt-1.5 font-mono"></div></div>
+          <div class="glass rounded-2xl p-5 stat-card"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Beklemede</div><div id="ov-pending" class="font-display font-bold text-3xl mt-1.5 text-amber-300">0</div><div class="text-[11px] text-slate-500 mt-1.5">inceleme bekliyor</div></div>
+          <div class="glass rounded-2xl p-5 stat-card"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Kabul</div><div id="ov-accepted" class="font-display font-bold text-3xl mt-1.5 text-emerald-300">0</div><div id="ov-rate" class="text-[11px] text-slate-500 mt-1.5 font-mono"></div></div>
+          <div class="glass rounded-2xl p-5 stat-card"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Red / Yedek</div><div class="font-display font-bold text-3xl mt-1.5"><span id="ov-rejected" class="text-red-300">0</span><span class="text-slate-600 text-xl"> / </span><span id="ov-waitlist" class="text-blue-300">0</span></div><div class="text-[11px] text-slate-500 mt-1.5">karara bağlanan</div></div>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4 mt-4">
+          <div class="glass rounded-2xl p-6"><div class="flex justify-between items-center mb-4"><h4 class="font-display font-bold">Rol Dağılımı</h4><span class="text-[11px] font-mono text-slate-500">doughnut</span></div><div class="h-[240px]"><canvas id="chart-role"></canvas></div></div>
+          <div class="glass rounded-2xl p-6"><div class="flex justify-between items-center mb-4"><h4 class="font-display font-bold">Son 14 Gün Başvuru Trendi</h4><span class="text-[11px] font-mono text-slate-500">timeseries</span></div><div class="h-[240px]"><canvas id="chart-trend"></canvas></div></div>
+        </div>
+        <div class="grid lg:grid-cols-[1fr_340px] gap-4 mt-4">
+          <div class="glass rounded-2xl p-6 overflow-hidden"><div class="flex justify-between items-center mb-4"><h4 class="font-display font-bold">Son Başvurular</h4><button onclick="switchAdminTab('applications')" class="text-xs text-cyan-300 font-semibold hover:underline">Tümünü Gör →</button></div><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Aday</th><th>Rol</th><th>Durum</th><th>Tarih</th></tr></thead><tbody id="recent-table-body"></tbody></table></div></div>
+          <div class="glass rounded-2xl p-6"><h4 class="font-display font-bold mb-4">Aktivite Günlüğü</h4><div id="activity-log" class="space-y-3.5 max-h-[320px] overflow-y-auto pr-1"></div></div>
+        </div>
+      </div>
+
+      <!-- APPLICATIONS -->
+      <div id="tab-applications" class="hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
+          <div><h3 class="font-display font-bold text-2xl">Başvurular</h3><p id="apps-countLabel" class="text-sm text-slate-400 mt-1 font-mono"></p></div>
+          <div class="flex flex-wrap gap-2"><button onclick="exportCSV(true)" class="btn-ghost !py-2 text-[13px]">CSV</button><button onclick="exportJSON()" class="btn-ghost !py-2 text-[13px]">JSON</button></div>
+        </div>
+        <div class="glass rounded-2xl p-4 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+          <input id="app-search" class="field !py-2.5" placeholder="Ara: isim, ID, e-posta, okul no...">
+          <select id="filter-status" class="field !py-2.5"><option value="all">Tüm Durumlar</option><option value="pending">Beklemede</option><option value="accepted">Kabul</option><option value="rejected">Red</option><option value="waitlist">Yedek</option></select>
+          <select id="filter-role" class="field !py-2.5"><option value="all">Tüm Roller</option></select>
+          <select id="filter-grade" class="field !py-2.5"><option value="all">Tüm Sınıflar</option><option>Hazırlık</option><option>9. Sınıf</option><option>10. Sınıf</option><option>11. Sınıf</option><option>12. Sınıf</option></select>
+          <button onclick="resetFilters()" class="btn-ghost !py-2.5 text-[13px] justify-center">Filtreleri Temizle</button>
+        </div>
+        <div id="bulkBar" class="hidden mb-4 rounded-xl border border-cyan-500/30 p-3.5 flex flex-wrap items-center gap-3" style="background:rgba(34,211,238,.06)">
+          <span class="text-sm font-semibold"><span id="bulkCount" class="text-cyan-300 font-mono">0</span> aday seçildi</span>
+          <div class="flex gap-2 ml-auto"><button onclick="bulkAction('accepted')" class="btn-success">Toplu Kabul</button><button onclick="bulkAction('rejected')" class="btn-danger">Toplu Red</button><button onclick="bulkAction('delete')" class="btn-ghost !py-2 !px-4 text-[13px] !text-red-300">Sil</button><button onclick="clearSelection()" class="text-xs text-slate-400 hover:text-white px-2">Vazgeç</button></div>
+        </div>
+        <div class="glass rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto"><table class="admin-table min-w-[1000px]"><thead><tr><th class="w-10"><input id="selectAll" type="checkbox" class="chk"></th><th data-sort="fullName">Aday ↕</th><th>İletişim</th><th data-sort="grade">Sınıf ↕</th><th>Roller</th><th data-sort="level">Seviye ↕</th><th data-sort="score">Puan ↕</th><th data-sort="status">Durum ↕</th><th data-sort="createdAt">Tarih ↕</th><th>İşlem</th></tr></thead><tbody id="apps-table-body"></tbody></table></div>
+          <div class="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/5"><div id="apps-pageInfo" class="text-xs font-mono text-slate-500"></div><div id="apps-pagination" class="flex gap-1.5 flex-wrap"></div></div>
+        </div>
+      </div>
+
+      <!-- TEAMS -->
+      <div id="tab-teams" class="hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
+          <div><h3 class="font-display font-bold text-2xl">Ekip Oluşturucu</h3><p class="text-sm text-slate-400 mt-1">Kabul edilen adayları sürükle-bırak mantığıyla takımlara ata. <span id="unassigned-count" class="font-mono text-cyan-300"></span></p></div>
+          <button onclick="autoBalance()" class="btn-primary !py-2.5 text-[13px]">Otomatik Dengeli Dağıt</button>
+        </div>
+        <div class="glass rounded-2xl p-5 mb-5 grid sm:grid-cols-[1fr_200px_auto] gap-3 items-end">
+          <div><label class="lbl">Yeni Takım Adı</label><input id="team-name" class="field !py-2.5" placeholder="örn. Artemis-2"></div>
+          <div><label class="lbl">Odak Alanı</label><select id="team-focus" class="field !py-2.5"><option>Yapay Zeka / Veri</option><option>Web / Mobil</option><option>Tasarım / Hikaye</option><option>Donanım / IoT</option><option>Karışık</option></select></div>
+          <button onclick="createTeam()" class="btn-ghost !py-2.5 text-[13px]">+ Takım Oluştur</button>
+        </div>
+        <div id="teams-grid" class="grid lg:grid-cols-2 gap-4"></div>
+        <div class="glass rounded-2xl p-6 mt-5"><h4 class="font-display font-bold mb-1">Atanmamış Kabul Edilenler</h4><p class="text-xs text-slate-500 mb-4">Bu havuzdaki adaylar henüz hiçbir takımda değil.</p><div id="unassigned-list" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="tab-analytics" class="hidden">
+        <h3 class="font-display font-bold text-2xl mb-1">Analitik & İstatistikler</h3><p class="text-sm text-slate-400 mb-5">Veriye dayalı ekip kararları için içgörüler.</p>
+        <div id="insights-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4"></div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="glass rounded-2xl p-6"><h4 class="font-display font-bold mb-4">Sınıf Dağılımı</h4><div class="h-[230px]"><canvas id="chart-grade"></canvas></div></div>
+          <div class="glass rounded-2xl p-6"><h4 class="font-display font-bold mb-4">Deneyim Seviyesi</h4><div class="h-[230px]"><canvas id="chart-level"></canvas></div></div>
+        </div>
+        <div class="glass rounded-2xl p-6 mt-4"><h4 class="font-display font-bold mb-4">En Popüler 8 Yetenek</h4><div class="h-[260px]"><canvas id="chart-skills"></canvas></div></div>
+      </div>
+
+      <!-- DEVELOPER -->
+      <div id="tab-developer" class="hidden">
+        <h3 class="font-display font-bold text-2xl mb-1">Geliştirici Merkezi</h3><p class="text-sm text-slate-400 mb-5">README, .env yapılandırması, üretim mimarisi (Next.js + FastAPI) ve güvenlik dokümantasyonu.</p>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="pill active" data-dev="readme">README.md</button>
+          <button class="pill" data-dev="env">.env.example</button>
+          <button class="pill" data-dev="backend">backend / main.py</button>
+          <button class="pill" data-dev="frontend">frontend / api.ts</button>
+          <button class="pill" data-dev="security">Güvenlik Kontrol Listesi</button>
+        </div>
+        <div id="dev-readme" class="code-block"><div class="flex items-center justify-between px-5 py-3 border-b border-white/10"><span class="font-mono text-xs text-slate-400">README.md</span><div class="flex gap-2"><button onclick="copyCode('code-readme')" class="text-[11px] font-bold text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 hover:bg-cyan-500/10">Kopyala</button><button onclick="downloadCode('code-readme','README.md')" class="text-[11px] font-bold text-slate-300 border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5">İndir</button></div></div><pre><code id="code-readme"></code></pre></div>
+        <div id="dev-env" class="code-block hidden"><div class="flex items-center justify-between px-5 py-3 border-b border-white/10"><span class="font-mono text-xs text-slate-400">.env.example</span><div class="flex gap-2"><button onclick="copyCode('code-env')" class="text-[11px] font-bold text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 hover:bg-cyan-500/10">Kopyala</button><button onclick="downloadCode('code-env','.env.example')" class="text-[11px] font-bold text-slate-300 border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5">İndir</button></div></div><pre><code id="code-env"></code></pre></div>
+        <div id="dev-backend" class="code-block hidden"><div class="flex items-center justify-between px-5 py-3 border-b border-white/10"><span class="font-mono text-xs text-slate-400">backend / main.py — FastAPI</span><div class="flex gap-2"><button onclick="copyCode('code-backend')" class="text-[11px] font-bold text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 hover:bg-cyan-500/10">Kopyala</button><button onclick="downloadCode('code-backend','main.py')" class="text-[11px] font-bold text-slate-300 border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5">İndir</button></div></div><pre><code id="code-backend"></code></pre></div>
+        <div id="dev-frontend" class="code-block hidden"><div class="flex items-center justify-between px-5 py-3 border-b border-white/10"><span class="font-mono text-xs text-slate-400">frontend / lib/api.ts — Next.js</span><div class="flex gap-2"><button onclick="copyCode('code-frontend')" class="text-[11px] font-bold text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 hover:bg-cyan-500/10">Kopyala</button><button onclick="downloadCode('code-frontend','api.ts')" class="text-[11px] font-bold text-slate-300 border border-white/15 rounded-lg px-3 py-1.5 hover:bg-white/5">İndir</button></div></div><pre><code id="code-frontend"></code></pre></div>
+        <div id="dev-security" class="hidden glass rounded-2xl p-6">
+          <h4 class="font-display font-bold mb-4">Uygulanan Güvenlik Önlemleri</h4>
+          <div class="grid md:grid-cols-2 gap-3 text-sm">
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ Parola Hashing (SHA-256 + Salt)</div><p class="text-xs text-slate-400 mt-1.5">Parolalar asla düz metin saklanmaz. Üretimde bcrypt/argon2 önerilir.</p></div>
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ SQL Injection Koruması</div><p class="text-xs text-slate-400 mt-1.5">Üretimde SQLAlchemy ORM + parametreli sorgular. Ham SQL yasak.</p></div>
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ XSS Sanitizasyonu</div><p class="text-xs text-slate-400 mt-1.5">Tüm girdiler escape edilir, script etiketleri temizlenir.</p></div>
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ Rate Limiting + Lockout</div><p class="text-xs text-slate-400 mt-1.5">5 hatalı girişte 5 dk kilit. Formda saatlik 3 gönderim limiti.</p></div>
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ Oturum & JWT Süre Sonu</div><p class="text-xs text-slate-400 mt-1.5">2 saatlik token ömrü, her istekte doğrulama, güvenli çıkış.</p></div>
+            <div class="rounded-xl border border-emerald-500/25 p-4" style="background:rgba(52,211,153,.05)"><div class="font-bold text-emerald-300 text-[13px]">✓ Honeypot + Doğrulama</div><p class="text-xs text-slate-400 mt-1.5">Bot tuzağı alanı, e-posta/telefon regex, mükerrer kayıt engeli.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="tab-settings" class="hidden">
+        <h3 class="font-display font-bold text-2xl mb-5">Ayarlar</h3>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="glass rounded-2xl p-6">
+            <h4 class="font-display font-bold mb-4">Başvuru Yapılandırması</h4>
+            <div class="space-y-4">
+              <div><label class="lbl">Okul Adı</label><input id="set-schoolName" class="field"></div>
+              <div><label class="lbl">Son Başvuru Tarihi</label><input id="set-deadline" type="datetime-local" class="field"></div>
+              <div><label class="lbl">Maksimum Takım Büyüklüğü</label><input id="set-maxTeam" type="number" min="2" max="6" class="field"></div>
+              <div class="flex items-center justify-between glass rounded-xl p-4"><div><div class="font-semibold text-sm">Başvurular Açık</div><div class="text-xs text-slate-500">Kapalıyken form devre dışı kalır</div></div><div id="set-openToggle" class="toggle on"></div></div>
+              <button onclick="saveSettings()" class="btn-primary w-full justify-center !py-3 text-sm">Ayarları Kaydet</button>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="glass rounded-2xl p-6">
+              <h4 class="font-display font-bold mb-4">Parola Değiştir</h4>
+              <div class="space-y-3">
+                <input id="pass-current" type="password" class="field" placeholder="Mevcut parola">
+                <input id="pass-new" type="password" class="field" placeholder="Yeni parola (min. 8 karakter)">
+                <input id="pass-confirm" type="password" class="field" placeholder="Yeni parola (tekrar)">
+                <button onclick="changePassword()" class="btn-ghost w-full justify-center !py-3 text-sm">Parolayı Güncelle</button>
+                <div class="text-[11px] font-mono text-slate-500 break-all">Aktif hash: <span id="currentHashDisplay" class="text-slate-400"></span></div>
+              </div>
+            </div>
+            <div class="rounded-2xl p-6 border border-red-500/25" style="background:rgba(239,68,68,.04)">
+              <h4 class="font-display font-bold mb-1 text-red-200">Tehlikeli Bölge</h4><p class="text-xs text-slate-500 mb-4">Bu işlemler geri alınamaz.</p>
+              <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="seedMoreDemo()" class="btn-ghost !py-2.5 text-[12px] justify-center">+5 Demo Ekle</button>
+                <button onclick="backupStore()" class="btn-ghost !py-2.5 text-[12px] justify-center">Yedek İndir</button>
+                <label class="btn-ghost !py-2.5 text-[12px] justify-center cursor-pointer text-center">Yedek Yükle<input id="file-restore" type="file" accept=".json" class="hidden"></label>
+                <button onclick="wipeAll()" class="btn-danger !py-2.5 text-[12px]">Tüm Veriyi Sil</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- STATUS MODAL -->
+<div id="statusModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-5" style="display:none">
+  <div class="absolute inset-0 bg-black/70" style="backdrop-filter:blur(6px)" onclick="closeModal('statusModal')"></div>
+  <div class="modal-box relative glass-strong rounded-3xl p-8 w-full max-w-md">
+    <button onclick="closeModal('statusModal')" class="absolute top-5 right-5 text-slate-500 hover:text-white text-xl">✕</button>
+    <h3 class="font-display font-bold text-xl">Başvuru Sorgula</h3><p class="text-sm text-slate-400 mt-1">Başvuru kodun ve e-postan ile durumunu öğren.</p>
+    <form id="status-form" class="mt-6 space-y-3.5">
+      <div><label class="lbl">Başvuru Kodu</label><input id="status-id" class="field font-mono uppercase" placeholder="NSAC26-XXXX"></div>
+      <div><label class="lbl">E-posta</label><input id="status-email" type="email" class="field" placeholder="ornek@okul.edu.tr"></div>
+      <button class="btn-primary w-full justify-center">Durumu Sorgula</button>
+    </form>
+    <div id="status-result" class="mt-5"></div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="fixed inset-0 z-[100] items-center justify-center p-5" style="display:none">
+  <div class="absolute inset-0 bg-black/70" style="backdrop-filter:blur(6px)"></div>
+  <div class="modal-box relative glass-strong rounded-3xl p-8 w-full max-w-md text-center">
+    <div class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-5" style="background:linear-gradient(135deg,#10B981,#059669);box-shadow:0 0 40px -8px rgba(16,185,129,.6)"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h3 class="font-display font-bold text-2xl">Başvurun Alındı!</h3>
+    <p class="text-sm text-slate-400 mt-2">Başvuru kodunu güvenli bir yere not et:</p>
+    <div class="mt-4 flex items-center justify-center gap-3">
+      <span id="success-id" class="font-mono font-bold text-xl text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-xl px-5 py-3 tracking-widest">NSAC26-XXXX</span>
+      <button onclick="copySuccessId()" class="btn-ghost !p-3" title="Kopyala"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+    </div>
+    <div class="mt-5 text-[13px] text-slate-400 rounded-xl border border-white/10 p-4 text-left leading-relaxed" style="background:rgba(255,255,255,.03)">Karar sonrası koordinatör sana <span class="text-white font-semibold">WhatsApp üzerinden manuel olarak</span> ulaşacak. Otomatik mesaj gönderilmez. Durumunu bu siteden takip edebilirsin.</div>
+    <div class="flex gap-2.5 mt-5"><button onclick="closeModal('successModal')" class="btn-ghost flex-1 justify-center">Kapat</button><button onclick="closeModal('successModal');openModal('statusModal')" class="btn-primary flex-1 justify-center !py-3">Sorgula</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="fixed inset-0 z-[130] items-center justify-center p-5" style="display:none">
+  <div class="absolute inset-0 bg-black/70" style="backdrop-filter:blur(6px)"></div>
+  <div class="modal-box relative glass-strong rounded-3xl p-8 w-full max-w-sm text-center">
+    <div id="confirm-icon" class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4" style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
+    <h3 id="confirm-title" class="font-display font-bold text-lg">Emin misin?</h3>
+    <p id="confirm-message" class="text-sm text-slate-400 mt-2 leading-relaxed"></p>
+    <div class="flex gap-2.5 mt-6"><button onclick="closeModal('confirmModal')" class="btn-ghost flex-1 justify-center !py-2.5 text-sm">Vazgeç</button><button id="confirm-ok" class="btn-primary flex-1 justify-center !py-2.5 text-sm">Onayla</button></div>
+  </div>
+</div>
+
+<!-- DETAIL DRAWER -->
+<div id="drawerOverlay" class="hidden fixed inset-0 bg-black/60 z-[110]" style="backdrop-filter:blur(4px)" onclick="closeDrawer()"></div>
+<aside id="applicantDrawer" class="fixed top-0 right-0 h-full w-full max-w-[520px] z-[120] glass-strong border-y-0 border-r-0 overflow-y-auto" style="transform:translateX(105%)">
+  <div class="p-6 md:p-7">
+    <div class="flex items-start justify-between mb-5">
+      <div class="flex items-center gap-4"><div id="d-avatar" class="w-14 h-14 rounded-2xl flex items-center justify-center font-display font-bold text-lg shrink-0"></div>
+      <div><h3 id="d-name" class="font-display font-bold text-lg leading-tight"></h3><div id="d-id" class="font-mono text-xs text-cyan-300 mt-1"></div><div id="d-status" class="mt-2"></div></div></div>
+      <button onclick="closeDrawer()" class="text-slate-500 hover:text-white text-xl px-2">✕</button>
+    </div>
+    <div id="d-timeline" class="rounded-xl border border-white/10 p-4 mb-5" style="background:rgba(255,255,255,.02)"></div>
+    <div class="grid grid-cols-2 gap-3 text-sm mb-5">
+      <div class="glass rounded-xl p-3.5"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">E-posta</div><div id="d-email" class="mt-1 break-all text-[13px]"></div></div>
+      <div class="glass rounded-xl p-3.5"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Telefon</div><div id="d-phone" class="mt-1 font-mono text-[13px]"></div></div>
+      <div class="glass rounded-xl p-3.5"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Sınıf / No</div><div id="d-grade" class="mt-1 text-[13px]"></div></div>
+      <div class="glass rounded-xl p-3.5"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Bölüm</div><div id="d-dept" class="mt-1 text-[13px]"></div></div>
+      <div class="glass rounded-xl p-3.5 col-span-2"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Roller & Seviye</div><div id="d-roles" class="flex flex-wrap gap-1.5"></div><div id="d-level" class="mt-2.5"></div></div>
+      <div class="glass rounded-xl p-3.5 col-span-2"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Yetenekler</div><div id="d-skills" class="flex flex-wrap gap-1.5"></div></div>
+    </div>
+    <div class="space-y-3 mb-5 text-sm">
+      <div class="glass rounded-xl p-4"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1.5">Motivasyon</div><p id="d-motivation" class="text-slate-300 text-[13px] leading-relaxed"></p></div>
+      <div id="d-ideaWrap" class="glass rounded-xl p-4"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1.5">Proje Fikri</div><p id="d-idea" class="text-slate-300 text-[13px] leading-relaxed"></p></div>
+      <div class="glass rounded-xl p-4"><div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1.5">Ekip Tercihi / Linkler</div><p id="d-extra" class="text-slate-300 text-[13px] leading-relaxed"></p></div>
+    </div>
+    <div class="rounded-xl border border-cyan-500/25 p-4 mb-5" style="background:rgba(34,211,238,.04)">
+      <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold uppercase tracking-widest text-cyan-300">Koordinatör Puanı</span><span id="d-scoreVal" class="font-mono font-bold text-cyan-300">— / 10</span></div>
+      <input id="d-score" type="range" min="0" max="10" value="7" step="1">
+      <label class="lbl mt-4">Koordinatör Notu (öğrenci göremez)</label>
+      <textarea id="d-notes" rows="2" class="field resize-none !text-[13px]" placeholder="Değerlendirme notun..."></textarea>
+      <button onclick="saveEvaluation()" class="btn-ghost w-full justify-center !py-2.5 text-[13px] mt-3">Değerlendirmeyi Kaydet</button>
+    </div>
+    <div class="rounded-xl border border-white/10 p-4 mb-5" style="background:rgba(255,255,255,.02)">
+      <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Manuel WhatsApp Mesaj Önizlemesi</div>
+      <p id="wa-preview" class="text-[12.5px] text-slate-300 leading-relaxed font-mono rounded-lg bg-black/30 border border-white/10 p-3"></p>
+      <button id="btn-whatsapp" class="w-full mt-3 rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition hover:brightness-110" style="background:linear-gradient(135deg,#16A34A,#15803D);color:#fff">WhatsApp'ta Aç (Manuel Gönder)<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></button>
+    </div>
+    <div class="grid grid-cols-3 gap-2.5 mb-3">
+      <button id="btn-accept" class="btn-success !py-3 justify-center">Kabul Et</button>
+      <button id="btn-waitlist" class="btn-ghost !py-3 justify-center text-[13px] !text-blue-300">Yedeğe Al</button>
+      <button id="btn-reject" class="btn-danger !py-3 justify-center">Reddet</button>
+    </div>
+    <button id="btn-deleteApp" class="w-full text-xs text-slate-500 hover:text-red-300 py-2 transition">Bu başvuruyu kalıcı olarak sil</button>
+  </div>
+</aside>
+
+<script>
+/* ═════════ HELPERS ═════════ */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const ROLES=["Yazılım Geliştirici","Veri Bilimi / AI","UI/UX Tasarım","Proje Yöneticisi","Hikaye Anlatıcı","Donanım / IoT"];
+const ROLE_DESC={"Yazılım Geliştirici":"Web/mobil prototip geliştirir, API ve demo kodunu yazar.","Veri Bilimi / AI":"NASA veri setlerini analiz eder, model ve görselleştirme üretir.","UI/UX Tasarım":"Arayüz, sunum ve görsel kimliği tasarlar.","Proje Yöneticisi":"Zaman planı, görev dağılımı ve jüri sunumunu yönetir.","Hikaye Anlatıcı":"Proje hikayesini, video ve demo anlatımını kurgular.","Donanım / IoT":"Sensör, Arduino ve fiziksel prototip tarafını üstlenir."};
+const ROLE_SKILLS={"Yazılım Geliştirici":["React","JavaScript","API"],"Veri Bilimi / AI":["Python","ML","Pandas"],"UI/UX Tasarım":["Figma","Canva","Prototip"],"Proje Yöneticisi":["Planlama","Sunum","Agile"],"Hikaye Anlatıcı":["Video","Yazarlık","Sunum"],"Donanım / IoT":["Arduino","Sensör","3D"]};
+const STATUS={pending:{label:"Beklemede",cls:"b-pending",dot:"#FCD34D"},accepted:{label:"Kabul",cls:"b-accepted",dot:"#6EE7B7"},rejected:{label:"Red",cls:"b-rejected",dot:"#FCA5A5"},waitlist:{label:"Yedek",cls:"b-waitlist",dot:"#93C5FD"}};
+const LEVEL_NAMES={1:"Başlangıç",2:"Temel",3:"Orta",4:"İleri",5:"Uzman"};
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function clean(v,max){return String(v||"").replace(/<script[\s\S]*?<\/script>/gi,"").replace(/[<>]/g,"").trim().slice(0,max||2000)}
+function fmtDate(iso){try{return new Date(iso).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}catch(e){return"-"}}
+function timeAgo(iso){const d=(Date.now()-new Date(iso).getTime())/1000;if(d<60)return"az önce";if(d<3600)return Math.floor(d/60)+" dk önce";if(d<86400)return Math.floor(d/3600)+" sa önce";return Math.floor(d/86400)+" gün önce"}
+function avatarColor(n){const c=["linear-gradient(135deg,#0EA5E9,#2563EB)","linear-gradient(135deg,#8B5CF6,#6D28D9)","linear-gradient(135deg,#10B981,#047857)","linear-gradient(135deg,#F59E0B,#B45309)","linear-gradient(135deg,#EC4899,#9D174D)","linear-gradient(135deg,#06B6D4,#0E7490)"];let h=0;for(const ch of String(n))h+=ch.charCodeAt(0);return c[h%c.length]}
+function initials(n){return String(n||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase()}
+function genId(){const A="ABCDEFGHJKMPRSTUXY23456789";let s="";for(let i=0;i<4;i++)s+=A[Math.floor(Math.random()*A.length)];return"NSAC26-"+s}
+function hashPass(p){try{if(window.CryptoJS)return CryptoJS.SHA256(p+"::nsac26-salt-v1").toString()}catch(e){}let h1=0xdeadbeef,h2=0x41c6ce57;const s=p+"::nsac26-salt-v1";for(let i=0;i<s.length;i++){const ch=s.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}return("00000000"+((h1^h2)>>>0).toString(16)).slice(-8)+("00000000"+(h2>>>0).toString(16)).slice(-8)}
+function toast(msg,type,title){const t=document.createElement("div");const colors={success:["#6EE7B7","rgba(16,185,129,.15)","rgba(16,185,129,.35)"],error:["#FCA5A5","rgba(239,68,68,.12)","rgba(239,68,68,.35)"],info:["#67E8F9","rgba(34,211,238,.08)","rgba(34,211,238,.3)"],warn:["#FCD34D","rgba(251,191,36,.08)","rgba(251,191,36,.3)"]};const c=colors[type||"info"];t.className="toast glass-strong rounded-2xl p-4 flex gap-3 items-start";t.style.borderColor=c[2];t.style.background="#0B1230F2";t.innerHTML=`<div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:${c[1]};border:1px solid ${c[2]};color:${c[0]}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div><div class="min-w-0"><div class="font-bold text-[13px]">${esc(title||(type==="error"?"Hata":type==="success"?"Başarılı":type==="warn"?"Dikkat":"Bilgi"))}</div><div class="text-[12.5px] text-slate-400 mt-0.5 leading-relaxed">${msg}</div></div>`;$("#toastContainer").appendChild(t);setTimeout(()=>{t.style.transition=".4s";t.style.opacity="0";t.style.transform="translateX(40px)";setTimeout(()=>t.remove(),400)},4200)}
+function openModal(id){const m=document.getElementById(id);m.style.display="flex";document.body.style.overflow="hidden"}
+function closeModal(id){document.getElementById(id).style.display="none";document.body.style.overflow=""}
+let confirmCb=null;
+function showConfirm(title,message,okText,okStyle,cb){$("#confirm-title").textContent=title;$("#confirm-message").innerHTML=message;const ok=$("#confirm-ok");ok.textContent=okText||"Onayla";ok.className="flex-1 justify-center !py-2.5 text-sm rounded-xl font-semibold inline-flex items-center gap-2 transition "+(okStyle||"btn-primary");confirmCb=cb;openModal("confirmModal")}
+$("#confirm-ok").addEventListener("click",()=>{closeModal("confirmModal");if(confirmCb)confirmCb()});
+function waLink(app){let p=String(app.phone||"").replace(/\D/g,"");if(p.startsWith("0"))p=p.slice(1);if(!p.startsWith("90"))p="90"+p;const st=STATUS[app.status]?STATUS[app.status].label:app.status;const msg=`Merhaba ${app.fullName}, NASA Space Apps Challenge 2026 okul takım başvurusu (${app.id}) hakkında bilgilendirme: Durumun: ${st}. Detaylar icin okula ugrayabilirsin. - Okul Koordinatorlugu`;return"https://wa.me/"+p+"?text="+encodeURIComponent(msg)}
+function waPreviewText(app){const st=STATUS[app.status]?STATUS[app.status].label:app.status;return`Merhaba ${app.fullName}, başvurun (${app.id}) hakkında: ${st}. — Koordinatörlük`}
+
+/* ═════════ STORE ═════════ */
+const DB_KEY="nsac26_db_v1";
+function defaultSettings(){return{schoolName:"Örnek Fen Lisesi",deadline:new Date("2026-10-05T23:59:59").toISOString(),applicationsOpen:true,maxTeamSize:6}}
+function seedApplications(){
+ const names=[["Elif Yılmaz","10. Sınıf"],["Kerem Demir","11. Sınıf"],["Zeynep Kaya","9. Sınıf"],["Mert Çelik","12. Sınıf"],["Selin Arslan","10. Sınıf"],["Emre Şahin","11. Sınıf"],["Ayşe Yıldız","10. Sınıf"],["Can Öztürk","12. Sınıf"],["Deniz Aksoy","9. Sınıf"],["Ege Kılıç","11. Sınıf"],["İrem Doğan","10. Sınıf"],["Aras Bulut","12. Sınıf"],["Lara Eren","9. Sınıf"],["Doruk Aydın","11. Sınıf"],["Nehir Koç","10. Sınıf"],["Kaan Polat","12. Sınıf"]];
+ const skillPool=["Python","JavaScript","React","Figma","SQL","Arduino","Git","Flutter","Canva","Premiere","Pandas","Blender"];
+ const depts=["Fen Lisesi","Anadolu Lisesi","Bilişim Teknolojileri","Elektrik-Elektronik","Endüstriyel Tasarım"];
+ const mots=["Uzayı ve veriyi çok seviyorum. Geçen yıl TÜBİTAK projesinde çalıştım ve hackathon temposuna alışığım. Ekibe hem kod hem de sunum tarafında katkı sağlayabilirim.","Python ve veri görselleştirme konusunda deneyimliyim. NASA açık verileriyle daha önce küçük analizler yaptım, bu projede gerçek bir ürün çıkarmak istiyorum.","Tasarım ve hikaye anlatımında güçlüyüm. Fikirlerin jüriye etkileyici sunulması için çalışırım. Gece-gündüz üretmeye hazırım.","Robotik kulübünde Arduino projeleri geliştirdim. Donanım ve yazılım köprüsünü kurabilir, prototip tarafını sahiplenebilirim."];
+ const ideas=["Uydu görüntülerinden orman yangını risk haritası çıkaran web uygulaması.","Şehir ışık kirliliğini haritalayan mobil uygulama ve farkındalık oyunu.","Deprem sonrası uydu verisiyle hasar önceliği öneren yapay zeka paneli.",""];
+ const statuses=["pending","pending","accepted","pending","accepted","rejected","pending","waitlist","pending","accepted","pending","rejected","waitlist","pending","accepted","pending"];
+ const tr=m=>m.toLocaleLowerCase("tr").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/[^a-z ]/g,"").replace(/ /g,".");
+ return names.map((n,i)=>{
+  const r1=ROLES[Math.floor(Math.random()*ROLES.length)];let r2=ROLES[Math.floor(Math.random()*ROLES.length)];if(r2===r1)r2=ROLES[(ROLES.indexOf(r1)+2)%ROLES.length];
+  const sk=[...skillPool].sort(()=>Math.random()-.5).slice(0,3+Math.floor(Math.random()*3));
+  const daysAgo=Math.floor(Math.random()*12), hh=Math.floor(Math.random()*24);
+  const created=new Date(Date.now()-daysAgo*864e5-hh*36e5).toISOString();
+  const st=statuses[i];const withFriends=Math.random()>.7;
+  return{id:genId(),fullName:n[0],schoolNo:String(1000+Math.floor(Math.random()*1500)),grade:n[1],email:tr(n[0])+"@okul.edu.tr",phone:"05"+(30+Math.floor(Math.random()*25))+String(Math.floor(1000000+Math.random()*8999999)),department:depts[Math.floor(Math.random()*depts.length)],roles:Math.random()>.5?[r1]:[r1,r2],skills:sk,level:2+Math.floor(Math.random()*4),github:Math.random()>.5?"https://github.com/"+tr(n[0]).split(".")[0]:"",motivation:mots[Math.floor(Math.random()*mots.length)],projectIdea:ideas[Math.floor(Math.random()*ideas.length)],teamPref:withFriends?"with-friends":"solo",friends:withFriends?"Deniz A., Mert K.":"",status:st,score:st==="pending"?null:6+Math.floor(Math.random()*4),notes:st==="accepted"?"Güçlü aday, ekip uyumu yüksek.":"",createdAt:created,updatedAt:created,reviewedAt:st==="pending"?null:created,reviewedBy:st==="pending"?null:"admin@okul.edu.tr"};
+ });
+}
+function getStore(){try{return JSON.parse(localStorage.getItem(DB_KEY))}catch(e){return null}}
+function saveStore(s){localStorage.setItem(DB_KEY,JSON.stringify(s))}
+function initStore(){let s=getStore();if(!s||!Array.isArray(s.applications)){s={applications:seedApplications(),teams:[],settings:defaultSettings(),users:[{email:"admin@okul.edu.tr",passwordHash:hashPass("Space2026!"),role:"super_admin",name:"Okul Koordinatörü",createdAt:new Date().toISOString()}],logs:[{id:"l1",action:"Sistem kuruldu",detail:"16 demo başvuru yüklendi",actor:"sistem",timestamp:new Date().toISOString()}]};const acc=s.applications.filter(a=>a.status==="accepted").slice(0,3).map(a=>a.id);if(acc.length)s.teams.push({id:"team_apollo",name:"Apollo-1",focus:"Yapay Zeka / Veri",color:"#22D3EE",members:acc,createdAt:new Date().toISOString()});saveStore(s)}return s}
+function addLog(action,detail){const s=getStore();s.logs.unshift({id:"l"+Date.now(),action,detail:detail||"",actor:currentAdmin()?.email||"Admin",timestamp:new Date().toISOString()});s.logs=s.logs.slice(0,80);saveStore(s);if(!$("#tab-overview").classList.contains("hidden"))renderActivity()}
+
+/* ═════════ AUTH ═════════ */
+function currentAdmin(){try{const s=JSON.parse(sessionStorage.getItem("nsac26_session"));if(!s||Date.now()>s.expiresAt){sessionStorage.removeItem("nsac26_session");return null}return s}catch(e){return null}}
+function showPublic(){$("#publicView").classList.remove("hidden");$("#loginView").classList.add("hidden");$("#dashboardView").classList.add("hidden");window.scrollTo({top:0});updatePublicStats();checkDeadline()}
+function showLogin(){$("#publicView").classList.add("hidden");$("#dashboardView").classList.add("hidden");$("#loginView").classList.remove("hidden");window.scrollTo({top:0})}
+function showDashboard(){$("#publicView").classList.add("hidden");$("#loginView").classList.add("hidden");$("#dashboardView").classList.remove("hidden");window.scrollTo({top:0});const a=currentAdmin();if(a)$("#adminEmailDisplay").textContent=a.email;switchAdminTab("overview");refreshAllAdmin()}
+function autofillLogin(){$("#login-email").value="admin@okul.edu.tr";$("#login-password").value="Space2026!";toast("Demo bilgileri dolduruldu.","info")}
+function loginAttempts(){try{return JSON.parse(localStorage.getItem("nsac26_attempts"))||{count:0,lockedUntil:0}}catch(e){return{count:0,lockedUntil:0}}}
+function setAttempts(a){localStorage.setItem("nsac26_attempts",JSON.stringify(a))}
+function logout(){sessionStorage.removeItem("nsac26_session");addLog("Çıkış yapıldı","Admin oturumu kapatıldı");showPublic();toast("Oturum güvenli şekilde kapatıldı.","info")}
+
+/* ═════════ STARS ═════════ */
+function initStars(){const c=$("#starCanvas"),x=c.getContext("2d");let W,H,stars=[],shoots=[];function rs(){W=c.width=innerWidth;H=c.height=innerHeight;stars=Array.from({length:Math.min(220,innerWidth/6)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,a:Math.random(),s:.3+Math.random()*1.2}))}rs();addEventListener("resize",rs);let mx=0,my=0;addEventListener("mousemove",e=>{mx=(e.clientX/innerWidth-.5)*8;my=(e.clientY/innerHeight-.5)*8});
+ setInterval(()=>{if(Math.random()>.6&&shoots.length<2)shoots.push({x:Math.random()*W*.7+W*.2,y:Math.random()*H*.3,vx:-7-Math.random()*4,vy:3+Math.random()*2,life:1})},4000);
+ (function loop(){x.clearRect(0,0,W,H);for(const s of stars){s.a+=.02*s.s;const o=.3+Math.abs(Math.sin(s.a))*.7;x.globalAlpha=o;x.fillStyle="#fff";x.beginPath();x.arc(s.x+mx*s.r,s.y+my*s.r,s.r,0,7);x.fill()}x.globalAlpha=1;shoots=shoots.filter(s=>s.life>0);for(const s of shoots){s.x+=s.vx;s.y+=s.vy;s.life-=.02;const g=x.createLinearGradient(s.x,s.y,s.x-s.vx*8,s.y-s.vy*8);g.addColorStop(0,"rgba(125,211,252,"+(s.life*.9)+")");g.addColorStop(1,"transparent");x.strokeStyle=g;x.lineWidth=1.6;x.beginPath();x.moveTo(s.x,s.y);x.lineTo(s.x-s.vx*8,s.y-s.vy*8);x.stroke()}requestAnimationFrame(loop)})()}
+
+/* ═════════ PUBLIC ═════════ */
+function updatePublicStats(){const s=getStore();const t=s.applications.length,a=s.applications.filter(x=>x.status==="accepted").length,p=s.applications.filter(x=>x.status==="pending").length;
+ $("#stat-total").textContent=t;$("#stat-accepted").textContent=a;$("#stat-pending").textContent=p;$("#hero-total").textContent=t;
+ $("#tele-total").textContent=t;$("#tele-accepted").textContent=a;$("#tele-rate").textContent=t?Math.round(a/t*100)+"%":"-";
+ const av=$("#hero-avatars");av.innerHTML="";s.applications.slice(0,5).forEach(x=>{const d=document.createElement("div");d.className="w-9 h-9 rounded-full border-2 border-[#060B1F] flex items-center justify-center text-[11px] font-bold";d.style.background=avatarColor(x.fullName);d.textContent=initials(x.fullName);d.title=x.fullName;av.appendChild(d)});
+ const nb=$("#notifBadge");if(nb)nb.textContent=p;const sp=$("#side-pending");if(sp)sp.textContent=p}
+function checkDeadline(){const s=getStore();const open=s.settings.applicationsOpen&&new Date(s.settings.deadline)>new Date();
+ $("#deadline-label").textContent="Son başvuru: "+fmtDate(s.settings.deadline)+" • "+(s.settings.applicationsOpen?"Alımlar açık":"Alımlar durduruldu");
+ $("#nav-open-label").textContent=open?"Başvurular Açık":"Başvurular Kapalı";
+ const banner=$("#formClosedBanner"),fields=$("#formFields");if(open){banner.classList.add("hidden");fields.style.opacity="1";fields.style.pointerEvents="auto"}else{banner.classList.remove("hidden");fields.style.opacity=".45";fields.style.pointerEvents="none"}}
+function tickCountdown(){const s=getStore();let diff=new Date(s.settings.deadline)-Date.now();if(diff<0)diff=0;const d=Math.floor(diff/864e5),h=Math.floor(diff/36e5)%24,m=Math.floor(diff/6e4)%60,sec=Math.floor(diff/1e3)%60;
+ $("#cd-days").textContent=String(d).padStart(2,"0");$("#cd-hours").textContent=String(h).padStart(2,"0");$("#cd-mins").textContent=String(m).padStart(2,"0");$("#cd-secs").textContent=String(sec).padStart(2,"0")}
+
+/* form state */
+let selectedSkills=[];
+function renderRolePills(){$("#rolePills").innerHTML=ROLES.map(r=>`<button type="button" class="pill" data-role="${esc(r)}">${esc(r)}</button>`).join("");$("#filter-role").innerHTML=`<option value="all">Tüm Roller</option>`+ROLES.map(r=>`<option>${esc(r)}</option>`).join("")}
+function renderSkillTags(){$("#skillTags").innerHTML=selectedSkills.map((s,i)=>`<span class="skill-tag">${esc(s)}<button type="button" onclick="removeSkill(${i})">✕</button></span>`).join("")||`<span class="text-xs text-slate-600">Henüz yetenek eklenmedi.</span>`}
+function removeSkill(i){selectedSkills.splice(i,1);renderSkillTags();updateProgress()}
+function addSkill(v){v=clean(v,30);if(!v)return;if(selectedSkills.length>=10){toast("En fazla 10 yetenek ekleyebilirsin.","warn");return}if(selectedSkills.map(x=>x.toLowerCase()).includes(v.toLowerCase()))return;selectedSkills.push(v);$("#skillInput").value="";renderSkillTags();updateProgress()}
+function updateProgress(){let f=0,tot=9;if($("#f-name").value.trim().length>2)f++;if($("#f-schoolNo").value.trim())f++;if($("#f-email").value.includes("@"))f++;if($("#f-phone").value.replace(/\D/g,"").length>=10)f++;if($("#f-grade").value)f++;if($("#f-department").value)f++;if(document.querySelectorAll("#rolePills .pill.active").length)f++;if(selectedSkills.length>=2)f++;if($("#f-motivation").value.trim().length>=50)f++;const p=Math.round(f/tot*100);$("#formProgress").textContent=p+"%";$("#formProgressBar").style.width=p+"%"}
+function renderRoleCards(){$("#roleCards").innerHTML=ROLES.map(r=>`<div class="glass rounded-2xl p-6 role-card reveal"><div class="w-11 h-11 rounded-xl flex items-center justify-center mb-4 font-display font-bold text-cyan-300" style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25)">◈</div><h3 class="font-display font-bold">${esc(r)}</h3><p class="text-[13px] text-slate-400 mt-2 leading-relaxed">${esc(ROLE_DESC[r])}</p><div class="flex flex-wrap gap-1.5 mt-4">${ROLE_SKILLS[r].map(s=>`<span class="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400">${esc(s)}</span>`).join("")}</div><button onclick="selectRoleAndScroll('${esc(r)}')" class="mt-5 text-[13px] font-bold text-cyan-300 hover:text-white transition">Bu rolle başvur →</button></div>`).join("")}
+function selectRoleAndScroll(r){document.querySelectorAll("#rolePills .pill").forEach(p=>{if(p.dataset.role===r)p.classList.add("active")});document.getElementById("basvuru").scrollIntoView({behavior:"smooth"});updateProgress();toast(`<b>${esc(r)}</b> rolü seçildi.`,"info")}
+function renderFAQ(){const q=[["Başvuru ücreti var mı?","Hayır. Tüm süreç okul içi ve tamamen ücretsizdir."],["Deneyimsizim, yine de başvurabilir miyim?","Kesinlikle. Motivasyon ve öğrenme isteği teknik seviyeden daha önemli. Seviye 1–2 adaylar da kabul ediliyor."],["Kabul/red kararını nasıl öğreneceğim?","Koordinatör karar sonrası sana WhatsApp üzerinden manuel olarak ulaşır. Ayrıca bu siteden kodunla sorgulama yapabilirsin. Otomatik mesaj gönderilmez."],["Takım arkadaşımı seçebilir miyim?","Formda ekip tercihini belirtebilirsin. Nihai takımlar rol dengesi gözetilerek koordinatör tarafından kurulur."],["Kaç kişilik ekipler kurulacak?","NASA kurallarına uygun şekilde 2–6 kişilik çevik ekipler hedefliyoruz."],["Verdiklerim güvende mi?","Evet. Verilerin yalnızca koordinatör tarafından görüntülenir, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz."]];$("#faqList").innerHTML=q.map((x,i)=>`<div class="faq-item glass rounded-2xl overflow-hidden reveal"><button class="w-full flex items-center justify-between gap-4 p-5 text-left font-semibold text-[15px]" onclick="this.parentElement.classList.toggle('open')"><span>${esc(x[0])}</span><span class="faq-arrow text-cyan-300 shrink-0">▼</span></button><div class="faq-a"><p class="px-5 pb-5 text-sm text-slate-400 leading-relaxed">${esc(x[1])}</p></div></div>`).join("")}
+function renderMarquee(){const w=["Python","React","Yapay Zeka","NASA Verisi","Figma","Arduino","48 Saat","Hackathon","Veri Bilimi","Prototip","Global Jüri","Ekip Ruhu"];const h=w.map(x=>`<span class="px-5 whitespace-nowrap">${x} <span class="text-cyan-500 ml-10">✦</span></span>`).join("");$("#marquee").innerHTML=h+h}
+
+/* ═════════ ADMIN: generic ═════════ */
+let charts={};
+function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k]}}
+const TAB_TITLES={overview:"Genel Bakış",applications:"Başvurular",teams:"Ekip Oluşturucu",analytics:"Analitik",developer:"Geliştirici Merkezi",settings:"Ayarlar"};
+function switchAdminTab(tab){$$(".sidebar-link[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));["overview","applications","teams","analytics","developer","settings"].forEach(t=>$("#tab-"+t).classList.toggle("hidden",t!==tab));$("#topbarTitle").textContent=TAB_TITLES[tab];$("#sidebar").classList.add("-translate-x-full");$("#sidebarOverlay").classList.add("hidden");
+ if(tab==="overview"){renderOverview()}if(tab==="applications"){renderTable()}if(tab==="teams"){renderTeams()}if(tab==="analytics"){renderAnalytics()}if(tab==="settings"){fillSettings()}}
+function refreshAllAdmin(){updatePublicStats();renderOverview();renderTable()}
+function renderActivity(){const s=getStore();$("#activity-log").innerHTML=s.logs.slice(0,10).map(l=>`<div class="flex gap-3"><div class="w-2 h-2 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div><div class="min-w-0"><div class="text-[13px] font-semibold">${esc(l.action)}</div><div class="text-[12px] text-slate-500 truncate">${esc(l.detail)}</div><div class="text-[11px] font-mono text-slate-600 mt-0.5">${timeAgo(l.timestamp)} • ${esc(l.actor)}</div></div></div>`).join("")||`<p class="text-sm text-slate-500">Henüz aktivite yok.</p>`}
+function renderOverview(){const s=getStore(),A=s.applications;const t=A.length,p=A.filter(x=>x.status==="pending").length,a=A.filter(x=>x.status==="accepted").length,r=A.filter(x=>x.status==="rejected").length,w=A.filter(x=>x.status==="waitlist").length;
+ $("#ov-total").textContent=t;$("#ov-pending").textContent=p;$("#ov-accepted").textContent=a;$("#ov-rejected").textContent=r;$("#ov-waitlist").textContent=w;
+ $("#ov-rate").textContent=t?("kabul oranı %"+Math.round(a/t*100)):"—";const today=A.filter(x=>new Date(x.createdAt).toDateString()===new Date().toDateString()).length;
+ $("#ov-total-sub").textContent="bugün +"+today+" başvuru";$("#ov-date").textContent=new Date().toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"});
+ $("#recent-table-body").innerHTML=[...A].sort((x,y)=>new Date(y.createdAt)-new Date(x.createdAt)).slice(0,5).map(x=>`<tr class="cursor-pointer" onclick="openDrawer('${x.id}')"><td><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0" style="background:${avatarColor(x.fullName)}">${initials(x.fullName)}</div><div><div class="font-semibold">${esc(x.fullName)}</div><div class="font-mono text-[11px] text-slate-500">${esc(x.id)}</div></div></div></td><td><span class="text-[11px] px-2 py-1 rounded-full bg-white/5 border border-white/10">${esc(x.roles[0]||"-")}</span></td><td><span class="badge ${STATUS[x.status].cls}"><span class="dot" style="background:${STATUS[x.status].dot}"></span>${STATUS[x.status].label}</span></td><td class="font-mono text-[12px] text-slate-500">${fmtDate(x.createdAt)}</td></tr>`).join("")||`<tr><td colspan="4" class="text-center text-slate-500 py-6">Kayıt yok</td></tr>`;
+ renderActivity();
+ destroyChart("role");destroyChart("trend");
+ if(window.Chart){Chart.defaults.color="#7C8DB0";Chart.defaults.borderColor="rgba(148,163,184,.1)";Chart.defaults.font.family="Inter";
+  const rc={};ROLES.forEach(rl=>rc[rl]=0);A.forEach(x=>x.roles.forEach(rl=>{if(rc[rl]!=null)rc[rl]++}));
+  charts.role=new Chart($("#chart-role"),{type:"doughnut",data:{labels:ROLES,datasets:[{data:ROLES.map(r=>rc[r]),backgroundColor:["#22D3EE","#3B82F6","#8B5CF6","#10B981","#F59E0B","#EC4899"],borderColor:"#060B1F",borderWidth:3}]},options:{cutout:"62%",plugins:{legend:{position:"bottom",labels:{boxWidth:10,padding:12,font:{size:11}}}}}});
+  const days=[...Array(14)].map((_,i)=>{const d=new Date(Date.now()-(13-i)*864e5);return d});const labels=days.map(d=>d.toLocaleDateString("tr-TR",{day:"numeric",month:"short"}));
+  const data=days.map(d=>A.filter(x=>new Date(x.createdAt).toDateString()===d.toDateString()).length);
+  charts.trend=new Chart($("#chart-trend"),{type:"line",data:{labels,datasets:[{label:"Başvuru",data,borderColor:"#22D3EE",backgroundColor:"rgba(34,211,238,.12)",fill:true,tension:.45,pointBackgroundColor:"#22D3EE",pointRadius:3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}})}
+ updatePublicStats()}
+
+/* ═════════ ADMIN: table ═════════ */
+let tbl={search:"",status:"all",role:"all",grade:"all",sortKey:"createdAt",sortDir:"desc",page:1,perPage:8,selected:new Set()};
+function getFiltered(){const s=getStore();let A=[...s.applications];const q=tbl.search.toLowerCase();
+ if(q)A=A.filter(x=>(x.fullName+" "+x.id+" "+x.email+" "+x.schoolNo).toLowerCase().includes(q));
+ if(tbl.status!=="all")A=A.filter(x=>x.status===tbl.status);
+ if(tbl.role!=="all")A=A.filter(x=>x.roles.includes(tbl.role));
+ if(tbl.grade!=="all")A=A.filter(x=>x.grade===tbl.grade);
+ A.sort((a,b)=>{let va=a[tbl.sortKey],vb=b[tbl.sortKey];if(tbl.sortKey==="score"){va=va??-1;vb=vb??-1}if(va<vb)return tbl.sortDir==="asc"?-1:1;if(va>vb)return tbl.sortDir==="asc"?1:-1;return 0});return A}
+function levelDots(l){let h=`<span class="flex gap-1 items-center">`;for(let i=1;i<=5;i++)h+=`<span class="level-dot ${i<=l?"f":""}"></span>`;return h+`</span>`}
+function renderTable(){const A=getFiltered();const total=A.length,pages=Math.max(1,Math.ceil(total/tbl.perPage));if(tbl.page>pages)tbl.page=pages;
+ const rows=A.slice((tbl.page-1)*tbl.perPage,tbl.page*tbl.perPage);
+ $("#apps-countLabel").textContent=`${total} kayıt listeleniyor • ${tbl.selected.size} seçili`;
+ $("#apps-pageInfo").textContent=`Sayfa ${tbl.page} / ${pages} • Toplam ${total}`;
+ $("#apps-table-body").innerHTML=rows.map(x=>`<tr><td><input type="checkbox" class="chk row-check" data-id="${x.id}" ${tbl.selected.has(x.id)?"checked":""}></td>
+ <td><div class="flex items-center gap-2.5 cursor-pointer" onclick="openDrawer('${x.id}')"><div class="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold shrink-0" style="background:${avatarColor(x.fullName)}">${initials(x.fullName)}</div><div><div class="font-semibold hover:text-cyan-300">${esc(x.fullName)}</div><div class="font-mono text-[11px] text-slate-500">${esc(x.id)} • No:${esc(x.schoolNo)}</div></div></div></td>
+ <td><div class="text-[12px]">${esc(x.email)}</div><div class="font-mono text-[11px] text-slate-500">${esc(x.phone)}</div></td>
+ <td class="text-[12px]">${esc(x.grade)}</td>
+ <td><div class="flex flex-col gap-1">${x.roles.slice(0,2).map(r=>`<span class="text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 whitespace-nowrap w-fit">${esc(r)}</span>`).join("")}</div></td>
+ <td>${levelDots(x.level)}</td>
+ <td>${x.score==null?'<span class="font-mono text-slate-600">—</span>':`<span class="font-mono font-bold ${x.score>=8?"text-emerald-300":x.score>=6?"text-cyan-300":"text-amber-300"}">${x.score}/10</span>`}</td>
+ <td><span class="badge ${STATUS[x.status].cls}"><span class="dot" style="background:${STATUS[x.status].dot}"></span>${STATUS[x.status].label}</span></td>
+ <td class="font-mono text-[12px] text-slate-500 whitespace-nowrap">${fmtDate(x.createdAt)}</td>
+ <td><div class="flex gap-1.5"><button onclick="openDrawer('${x.id}')" class="text-[12px] font-bold text-cyan-300 hover:text-white border border-cyan-500/30 rounded-lg px-2.5 py-1.5">İncele</button><a href="${waLink(x)}" target="_blank" class="text-[12px] font-bold text-emerald-300 hover:text-white border border-emerald-500/30 rounded-lg px-2.5 py-1.5" title="WhatsApp">WA</a></div></td></tr>`).join("")||`<tr><td colspan="10" class="text-center py-10 text-slate-500">Sonuç bulunamadı. Filtreleri sıfırlamayı dene.</td></tr>`;
+ let ph=`<button onclick="gotoPage(${tbl.page-1})" ${tbl.page<=1?"disabled":""} class="px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold ${tbl.page<=1?"opacity-30":"hover:border-cyan-400/50"}">←</button>`;
+ for(let i=1;i<=pages&&i<=7;i++)ph+=`<button onclick="gotoPage(${i})" class="px-3 py-1.5 rounded-lg border text-xs font-bold ${i===tbl.page?"border-cyan-400/60 bg-cyan-500/10 text-cyan-300":"border-white/10 hover:border-cyan-400/50"}">${i}</button>`;
+ ph+=`<button onclick="gotoPage(${tbl.page+1})" ${tbl.page>=pages?"disabled":""} class="px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold ${tbl.page>=pages?"opacity-30":"hover:border-cyan-400/50"}">→</button>`;
+ $("#apps-pagination").innerHTML=ph;
+ const bb=$("#bulkBar");if(tbl.selected.size>0){bb.classList.remove("hidden");$("#bulkCount").textContent=tbl.selected.size}else bb.classList.add("hidden");
+ $$(".row-check").forEach(c=>c.addEventListener("change",e=>{const id=e.target.dataset.id;if(e.target.checked)tbl.selected.add(id);else tbl.selected.delete(id);renderTable()}));
+ const all=$("#selectAll");all.checked=rows.length>0&&rows.every(r=>tbl.selected.has(r.id))}
+function gotoPage(p){tbl.page=p;renderTable()}
+function resetFilters(){tbl={...tbl,search:"",status:"all",role:"all",grade:"all",page:1};$("#app-search").value="";$("#filter-status").value="all";$("#filter-role").value="all";$("#filter-grade").value="all";renderTable()}
+function clearSelection(){tbl.selected.clear();renderTable()}
+function bulkAction(act){if(!tbl.selected.size)return;const ids=[...tbl.selected];
+ if(act==="delete"){showConfirm("Toplu Silme",`${ids.length} başvuru kalıcı olarak silinecek. Emin misin?`,"Evet, Sil","btn-danger",()=>{const s=getStore();s.applications=s.applications.filter(x=>!tbl.selected.has(x.id));s.teams.forEach(t=>t.members=t.members.filter(m=>!tbl.selected.has(m)));addLog("Toplu silme",ids.length+" kayıt silindi");saveStore(s);tbl.selected.clear();refreshAllAdmin();toast(ids.length+" kayıt silindi.","success")})}
+ else{const label=act==="accepted"?"kabul edilecek":"reddedilecek";showConfirm("Toplu Karar",`${ids.length} adayın durumu <b class="text-white">${STATUS[act].label}</b> olarak ${label}. Onaylıyor musun?`,"Onayla","btn-primary",()=>{const s=getStore();s.applications.forEach(x=>{if(tbl.selected.has(x.id)){x.status=act;x.updatedAt=new Date().toISOString();x.reviewedAt=new Date().toISOString();x.reviewedBy=currentAdmin().email}});saveStore(s);addLog("Toplu karar",ids.length+" aday → "+STATUS[act].label);tbl.selected.clear();refreshAllAdmin();toast(`Toplu karar uygulandı. WhatsApp bilgilendirmesini manuel yapmayı unutma.`,"warn")})}}
+function exportCSV(filtered){const A=filtered?getFiltered():getStore().applications;if(!A.length){toast("Dışa aktarılacak kayıt yok.","warn");return}
+ const head=["ID","Ad Soyad","Okul No","Sinif","E-posta","Telefon","Bolum","Roller","Yetenekler","Seviye","Puan","Durum","Motivasyon","Proje Fikri","Ekip Tercihi","Basvuru Tarihi"];
+ const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+ const csv=[head.join(";")].concat(A.map(x=>[x.id,x.fullName,x.schoolNo,x.grade,x.email,x.phone,x.department,x.roles.join(" | "),x.skills.join(" | "),x.level,x.score??"",STATUS[x.status].label,x.motivation,x.projectIdea,x.teamPref,fmtDate(x.createdAt)].map(q).join(";"))).join("\n");
+ dl(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),`nsac26-basvurular-${Date.now()}.csv`);addLog("CSV dışa aktarıldı",A.length+" kayıt");toast(A.length+" kayıt CSV olarak indirildi.","success")}
+function exportJSON(){const A=getFiltered();dl(new Blob([JSON.stringify(A,null,2)],{type:"application/json"}),`nsac26-basvurular-${Date.now()}.json`);addLog("JSON dışa aktarıldı",A.length+" kayıt");toast("JSON indirildi.","success")}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+
+/* ═════════ DRAWER ═════════ */
+let currentDrawerId=null;
+function openDrawer(id){const s=getStore();const x=s.applications.find(a=>a.id===id);if(!x)return;currentDrawerId=id;
+ $("#d-avatar").style.background=avatarColor(x.fullName);$("#d-avatar").textContent=initials(x.fullName);
+ $("#d-name").textContent=x.fullName;$("#d-id").textContent=x.id+" • "+fmtDate(x.createdAt);
+ $("#d-status").innerHTML=`<span class="badge ${STATUS[x.status].cls}"><span class="dot" style="background:${STATUS[x.status].dot}"></span>${STATUS[x.status].label}</span>`;
+ const steps=[["Başvuru Alındı",true,fmtDate(x.createdAt)],["Değerlendirme",x.status!=="pending",(x.status!=="pending"&&x.reviewedAt)?fmtDate(x.reviewedAt):"bekliyor"],["Karar: "+STATUS[x.status].label,x.status!=="pending",x.status==="pending"?"—":STATUS[x.status].label]];
+ $("#d-timeline").innerHTML=`<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Başvuru Zaman Çizelgesi</div>`+steps.map((st,i)=>`<div class="flex gap-3 ${i<2?"pb-3":""}"><div class="flex flex-col items-center"><div class="tl-dot ${st[1]?(x.status==="rejected"&&i===2?"bad":"done"):""}"></div>${i<2?'<div class="w-px h-4 bg-white/10 my-1"></div>':""}</div><div class="flex-1 flex justify-between text-[12.5px]"><span class="${st[1]?"text-slate-200 font-semibold":"text-slate-500"}">${st[0]}</span><span class="font-mono text-[11px] text-slate-500">${st[2]}</span></div></div>`).join("");
+ $("#d-email").textContent=x.email;$("#d-phone").textContent=x.phone;$("#d-grade").textContent=x.grade+" • No: "+x.schoolNo;$("#d-dept").textContent=x.department;
+ $("#d-roles").innerHTML=x.roles.map(r=>`<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-200">${esc(r)}</span>`).join("");
+ $("#d-level").innerHTML=`<div class="flex items-center gap-2.5">${levelDots(x.level)}<span class="text-[12px] text-slate-400">${LEVEL_NAMES[x.level]||""} (${x.level}/5)</span></div>`;
+ $("#d-skills").innerHTML=x.skills.map(sk=>`<span class="skill-tag !text-[11px]">${esc(sk)}</span>`).join("");
+ $("#d-motivation").textContent=x.motivation;$("#d-ideaWrap").style.display=x.projectIdea?"block":"none";$("#d-idea").textContent=x.projectIdea||"";
+ $("#d-extra").innerHTML=`${x.teamPref==="solo"?"Otomatik ekip ataması istiyor.":"Arkadaşlarıyla: "+esc(x.friends||"-")}${x.github?`<br><span class="font-mono text-cyan-300">${esc(x.github)}</span>`:""}`;
+ $("#d-score").value=x.score??7;updScoreLabel();$("#d-score").style.setProperty("--p",((x.score??7)/10*100)+"%");$("#d-notes").value=x.notes||"";
+ $("#wa-preview").textContent=waPreviewText(x);$("#btn-whatsapp").onclick=()=>window.open(waLink(x),"_blank");
+ $("#btn-accept").onclick=()=>changeStatus(id,"accepted");$("#btn-waitlist").onclick=()=>changeStatus(id,"waitlist");$("#btn-reject").onclick=()=>changeStatus(id,"rejected");
+ $("#btn-deleteApp").onclick=()=>showConfirm("Başvuru Silinsin mi?",`<b class="text-white">${esc(x.fullName)}</b> (${esc(x.id)}) kalıcı olarak silinecek.`,"Evet, Sil","btn-danger",()=>{const st=getStore();st.applications=st.applications.filter(a=>a.id!==id);st.teams.forEach(t=>t.members=t.members.filter(m=>m!==id));saveStore(st);addLog("Başvuru silindi",x.fullName+" • "+id);closeDrawer();refreshAllAdmin();toast("Başvuru silindi.","success")});
+ $("#drawerOverlay").classList.remove("hidden");$("#applicantDrawer").style.transform="translateX(0)";document.body.style.overflow="hidden"}
+function closeDrawer(){$("#drawerOverlay").classList.add("hidden");$("#applicantDrawer").style.transform="translateX(105%)";document.body.style.overflow="";currentDrawerId=null}
+function updScoreLabel(){$("#d-scoreVal").textContent=$("#d-score").value+" / 10"}
+function saveEvaluation(){if(!currentDrawerId)return;const s=getStore();const x=s.applications.find(a=>a.id===currentDrawerId);x.score=parseInt($("#d-score").value);x.notes=clean($("#d-notes").value,1000);x.updatedAt=new Date().toISOString();saveStore(s);addLog("Değerlendirme kaydedildi",x.fullName+" → "+x.score+"/10");refreshAllAdmin();toast("Puan ve not kaydedildi.","success")}
+function changeStatus(id,st){const s=getStore();const x=s.applications.find(a=>a.id===id);const map={accepted:["Kabul Onayı","btn-success"],waitlist:["Yedek Onayı","btn-primary"],rejected:["Red Onayı","btn-danger"]};
+ showConfirm(map[st][0],`<b class="text-white">${esc(x.fullName)}</b> adlı adayın durumu <b class="text-white">${STATUS[st].label}</b> olarak güncellenecek.<br><br><span class="text-amber-300">Otomatik mesaj gönderilmez — WhatsApp bilgilendirmesini manuel yapmalısın.</span>`,"Onayla ve Kaydet",map[st][1],()=>{const st2=getStore();const y=st2.applications.find(a=>a.id===id);y.status=st;y.updatedAt=new Date().toISOString();y.reviewedAt=new Date().toISOString();y.reviewedBy=currentAdmin().email;saveStore(st2);addLog("Durum değişikliği",y.fullName+" → "+STATUS[st].label);refreshAllAdmin();openDrawer(id);toast(`Durum <b>${STATUS[st].label}</b> olarak güncellendi. Manuel WhatsApp adımını unutma.`,"warn")})}
+
+/* ═════════ TEAMS ═════════ */
+const TEAM_COLORS=["#22D3EE","#8B5CF6","#10B981","#F59E0B","#EC4899","#3B82F6"];
+function teamMembers(team){const s=getStore();return team.members.map(id=>s.applications.find(a=>a.id===id)).filter(Boolean)}
+function renderTeams(){const s=getStore();const assigned=new Set();s.teams.forEach(t=>t.members.forEach(m=>assigned.add(m)));
+ const unassigned=s.applications.filter(a=>a.status==="accepted"&&!assigned.has(a.id));
+ $("#unassigned-count").textContent=`• ${unassigned.length} atanmamış`;
+ $("#teams-grid").innerHTML=s.teams.map((t,ti)=>{const mems=teamMembers(t);const avg=mems.length? (mems.reduce((a,m)=>a+(m.score||7),0)/mems.length).toFixed(1):"—";
+  const rolesCovered=[...new Set(mems.flatMap(m=>m.roles))];
+  return`<div class="glass rounded-2xl p-5"><div class="flex items-start justify-between mb-4"><div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full" style="background:${t.color};box-shadow:0 0 12px ${t.color}"></div><div><div class="font-display font-bold">${esc(t.name)}</div><div class="text-[12px] text-slate-500">${esc(t.focus)} • ${mems.length}/${s.settings.maxTeamSize} kişi • ort. ${avg}</div></div></div><button onclick="deleteTeam('${t.id}')" class="text-slate-600 hover:text-red-300 text-sm px-2">✕</button></div>
+  <div class="flex flex-wrap gap-1.5 mb-4">${rolesCovered.map(r=>`<span class="text-[10px] font-mono px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400">${esc(r)}</span>`).join("")||'<span class="text-xs text-slate-600">Henüz rol kapsamı yok</span>'}</div>
+  <div class="space-y-2">${mems.map(m=>`<div class="flex items-center gap-2.5 rounded-xl border border-white/8 p-2.5" style="background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.07)"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0" style="background:${avatarColor(m.fullName)}">${initials(m.fullName)}</div><div class="min-w-0 flex-1 cursor-pointer" onclick="openDrawer('${m.id}')"><div class="text-[13px] font-semibold truncate hover:text-cyan-300">${esc(m.fullName)}</div><div class="text-[11px] text-slate-500 truncate">${esc(m.roles[0]||"")} • Sv.${m.level}</div></div><span class="font-mono text-[11px] ${m.score>=8?"text-emerald-300":"text-cyan-300"}">${m.score??"—"}</span><button onclick="removeMember('${t.id}','${m.id}')" class="text-slate-600 hover:text-red-300 px-1.5">✕</button></div>`).join("")||'<div class="text-center text-xs text-slate-600 py-5 border border-dashed border-white/10 rounded-xl">Üye yok — aşağıdaki havuzdan ata</div>'}</div></div>`}).join("")||`<div class="col-span-2 text-center glass rounded-2xl p-10 text-slate-500 text-sm">Henüz takım yok. Yukarıdan oluştur veya otomatik dağıt.</div>`;
+ $("#unassigned-list").innerHTML=unassigned.map(m=>`<div class="rounded-xl border border-white/10 p-3.5" style="background:rgba(255,255,255,.02)"><div class="flex items-center gap-2.5 mb-2.5"><div class="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold shrink-0" style="background:${avatarColor(m.fullName)}">${initials(m.fullName)}</div><div class="min-w-0"><div class="text-[13px] font-semibold truncate">${esc(m.fullName)}</div><div class="text-[11px] text-slate-500">${esc(m.roles[0]||"")} • ${m.score??"—"}/10</div></div></div><div class="flex gap-2"><select id="assign-${m.id}" class="field !py-2 !text-[12px]"><option value="">Takım seç...</option>${s.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select><button onclick="assignMember('${m.id}')" class="btn-primary !py-2 !px-3.5 !text-[12px] shrink-0">Ata</button></div></div>`).join("")||`<p class="col-span-3 text-sm text-slate-500 text-center py-4">Tüm kabul edilenler takımlara atanmış. Harika iş!</p>`}
+function createTeam(){const name=clean($("#team-name").value,40);if(!name){toast("Takım adı gir.","warn");return}const s=getStore();s.teams.push({id:"team_"+Date.now(),name,focus:$("#team-focus").value,color:TEAM_COLORS[s.teams.length%TEAM_COLORS.length],members:[],createdAt:new Date().toISOString()});saveStore(s);addLog("Takım oluşturuldu",name);$("#team-name").value="";renderTeams();toast(`<b>${esc(name)}</b> oluşturuldu.`,"success")}
+function assignMember(appId){const sel=$("#assign-"+appId);if(!sel||!sel.value){toast("Önce takım seç.","warn");return}const s=getStore();const t=s.teams.find(x=>x.id===sel.value);if(t.members.length>=s.settings.maxTeamSize){toast("Takım dolu (maks "+s.settings.maxTeamSize+").","error");return}if(t.members.includes(appId))return;t.members.push(appId);saveStore(s);addLog("Üye atandı",appId+" → "+t.name);renderTeams();toast("Üye atandı.","success")}
+function removeMember(teamId,appId){const s=getStore();const t=s.teams.find(x=>x.id===teamId);t.members=t.members.filter(m=>m!==appId);saveStore(s);addLog("Üye çıkarıldı",appId+" ← "+t.name);renderTeams()}
+function deleteTeam(id){showConfirm("Takım Silinsin mi?","Takım silinecek, üyeler havuza dönecek (başvurular silinmez).","Evet, Sil","btn-danger",()=>{const s=getStore();const t=s.teams.find(x=>x.id===id);s.teams=s.teams.filter(x=>x.id!==id);saveStore(s);addLog("Takım silindi",t?t.name:id);renderTeams();toast("Takım silindi.","success")})}
+function autoBalance(){const s=getStore();const assigned=new Set();s.teams.forEach(t=>t.members.forEach(m=>assigned.add(m)));
+ let pool=s.applications.filter(a=>a.status==="accepted"&&!assigned.has(a.id)).sort((a,b)=>(b.score||7)-(a.score||7));
+ if(!pool.length){toast("Atanacak aday yok.","warn");return}
+ if(!s.teams.length){s.teams.push({id:"team_"+Date.now(),name:"Apollo-1",focus:"Karışık",color:"#22D3EE",members:[],createdAt:new Date().toISOString()},{id:"team_"+(Date.now()+1),name:"Artemis-1",focus:"Karışık",color:"#8B5CF6",members:[],createdAt:new Date().toISOString()})}
+ let i=0,guard=0;while(pool.length&&guard<200){guard++;const t=s.teams[i%s.teams.length];if(t.members.length<s.settings.maxTeamSize){t.members.push(pool.shift().id)}i++;if(s.teams.every(t=>t.members.length>=s.settings.maxTeamSize)&&pool.length){const n=s.teams.length+1;s.teams.push({id:"team_"+Date.now()+n,name:"Takım-"+n,focus:"Karışık",color:TEAM_COLORS[n%TEAM_COLORS.length],members:[pool.shift().id],createdAt:new Date().toISOString()})}}
+ saveStore(s);addLog("Otomatik dağıtım","Kabul edilenler dengeli dağıtıldı");renderTeams();toast("Otomatik dengeli dağıtım tamamlandı.","success")}
+
+/* ═════════ ANALYTICS ═════════ */
+function renderAnalytics(){const s=getStore(),A=s.applications;destroyChart("grade");destroyChart("level");destroyChart("skills");
+ const avgL=A.length?(A.reduce((a,x)=>a+x.level,0)/A.length).toFixed(1):"—";
+ const rc={};ROLES.forEach(r=>rc[r]=0);A.forEach(x=>x.roles.forEach(r=>{if(rc[r]!=null)rc[r]++}));
+ const topRole=Object.entries(rc).sort((a,b)=>b[1]-a[1])[0];
+ const sk={};A.forEach(x=>x.skills.forEach(k=>sk[k]=(sk[k]||0)+1));const topSk=Object.entries(sk).sort((a,b)=>b[1]-a[1])[0];
+ const acc=A.filter(x=>x.status==="accepted").length;
+ $("#insights-grid").innerHTML=[["En Popüler Rol",topRole?topRole[0]:"—",topRole?topRole[1]+" başvuru":"", "#22D3EE"],["Ortalama Seviye",avgL+" / 5",(avgL>=3.5?"güçlü havuz":"gelişim alanı"),"#8B5CF6"],["Kabul Oranı",(A.length?Math.round(acc/A.length*100):0)+"%",acc+" / "+A.length+" aday","#10B981"],["Top Yetenek",topSk?topSk[0]:"—",topSk?topSk[1]+" adayda var":"", "#F59E0B"]].map(c=>`<div class="glass rounded-2xl p-5 stat-card"><div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">${c[0]}</div><div class="font-display font-bold text-xl mt-1.5" style="color:${c[3]}">${esc(c[1])}</div><div class="text-[11px] text-slate-500 mt-1">${esc(c[2])}</div></div>`).join("");
+ if(window.Chart){Chart.defaults.color="#7C8DB0";Chart.defaults.font.family="Inter";
+  const grades=["Hazırlık","9. Sınıf","10. Sınıf","11. Sınıf","12. Sınıf"];
+  charts.grade=new Chart($("#chart-grade"),{type:"bar",data:{labels:grades,datasets:[{data:grades.map(g=>A.filter(x=>x.grade===g).length),backgroundColor:"rgba(34,211,238,.55)",borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  charts.level=new Chart($("#chart-level"),{type:"bar",data:{labels:["Sv.1","Sv.2","Sv.3","Sv.4","Sv.5"],datasets:[{data:[1,2,3,4,5].map(l=>A.filter(x=>x.level===l).length),backgroundColor:["#334155","#0EA5E9","#22D3EE","#8B5CF6","#10B981"],borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  const top8=Object.entries(sk).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  charts.skills=new Chart($("#chart-skills"),{type:"bar",data:{labels:top8.map(x=>x[0]),datasets:[{data:top8.map(x=>x[1]),backgroundColor:"rgba(139,92,246,.55)",borderRadius:8,borderSkipped:false}]},options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}})}}
+
+/* ═════════ DEVELOPER CONTENT ═════════ */
+const CODE_README=`NASA SPACE APPS CHALLENGE 2026 - OKUL TAKIM BASVURU SISTEMI
+================================================================
+Okul ici ekip olusturma amacli ogrenci basvuru + aday yonetim uygulamasi.
+
+OZELLIKLER
+----------
+[Public]  Basvuru formu (validasyonlu), durum sorgulama, canli istatistik
+[Public]  Rol kartlari, surec adimlari, SSS, geri sayim
+[Admin]   Sifreli giris (SHA-256 + salt), oturum yonetimi (2 saat)
+[Admin]   Istatistik kartlari, grafikler, gelismis filtre + arama + siralama
+[Admin]   Aday detay drawer, puan + not, kabul/red/yedek + onay modali
+[Admin]   Manuel WhatsApp yonlendirme (otomatik gonderim YOK - wa.me link)
+[Admin]   Ekip olusturucu, otomatik dengeli dagitim, analitik paneli
+[Admin]   CSV/JSON export, yedekleme, ayarlar (deadline, kontenjan)
+
+TEKNOLOJI
+---------
+Bu dosya : Tek-dosya demo (HTML + Tailwind + Chart.js + localStorage DB)
+Uretim   : Frontend Next.js 14 + Backend FastAPI + PostgreSQL + Redis
+
+URETIM KURULUMU
+---------------
+  1) git clone <repo> && cd nsac26
+  2) cp .env.example .env   (SECRET_KEY ve DB bilgilerini doldur)
+  3) Backend : cd backend && pip install -r requirements.txt && uvicorn main:app --reload
+  4) Frontend: cd frontend && npm install && npm run dev
+  5) Alembic migration: alembic upgrade head
+  6) Admin olustur: python seed_admin.py --email admin@okul.edu.tr
+
+API ENDPOINTS (Uretim)
+----------------------
+  POST /api/applications        Basvuru olustur (rate-limit: 3/saat)
+  GET  /api/applications/{id}   Durum sorgula (id + email)
+  POST /api/auth/login          Admin girisi -> JWT (2h)
+  GET  /api/admin/applications  Tum basvurular (JWT gerekli, filtreli)
+  PATCH /api/admin/applications/{id}  Durum/puan/not guncelle
+  GET  /api/admin/stats         Dashboard istatistikleri
+  CRUD /api/admin/teams         Ekip yonetimi
+
+KLASOR YAPISI (Uretim)
+----------------------
+  /frontend  app/(public)/page.tsx  app/admin/...  lib/api.ts
+  /backend   main.py  models.py  schemas.py  auth.py  routers/
+  docker-compose.yml  README.md  .env.example
+
+GUVENLIK
+--------
+  - bcrypt parola hashing, JWT + refresh token
+  - SQLAlchemy ORM (parametreli sorgu, SQL injection korumasi)
+  - Pydantic validasyon, XSS escape, CSRF token
+  - SlowAPI rate-limit, 5 hatali giriste kilit
+  - Manuel WhatsApp: sistem mesaj GONDERMEZ, koordinantor wa.me ile iletir
+
+NOT: Bu site okul ici organizasyon icindir, NASA resmi sitesi degildir.
+`;
+const CODE_ENV=`# NSAC 2026 - ORNEK ENV YAPILANDIRMASI (.env.example)
+# Gercek .env dosyasini olusturup bu degerleri doldurun. Asla repoya eklemeyin.
+
+APP_NAME=NSAC26-Okul-Takim
+APP_ENV=production
+DEBUG=false
+FRONTEND_URL=https://basvuru.okul.edu.tr
+BACKEND_URL=https://api.okul.edu.tr
+
+# Veritabani (PostgreSQL)
+DATABASE_URL=postgresql://nsac_user:guclu_sifre_buraya@db:5432/nsac26
+DB_POOL_SIZE=10
+
+# Guvenlik
+SECRET_KEY=buraya-en-az-64-karakterlik-rastgele-anahtar-uretin-openssl-rand-hex-32
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=120
+BCRYPT_ROUNDS=12
+CORS_ORIGINS=https://basvuru.okul.edu.tr
+
+# Admin (ilk kurulum)
+ADMIN_EMAIL=admin@okul.edu.tr
+ADMIN_PASSWORD_HASH=$2b$12$...uretimde-bcrypt-ile-uret...
+
+# Basvuru ayarlari
+APPLICATIONS_OPEN=true
+DEADLINE_ISO=2026-10-05T23:59:59+03:00
+MAX_TEAM_SIZE=6
+RATE_LIMIT_PER_HOUR=3
+MAX_LOGIN_ATTEMPTS=5
+LOCKOUT_MINUTES=5
+
+# Redis (rate-limit + session)
+REDIS_URL=redis://redis:6379/0
+
+# Loglama
+LOG_LEVEL=INFO
+SENTRY_DSN=
+`;
+const CODE_BACKEND=`# backend/main.py - FastAPI uretim iskeleti (ozet)
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+import models, auth, database
+
+app = FastAPI(title="NSAC26 API", version="2.1.0")
+limiter = Limiter(key_func=get_remote_address)
+models.Base.metadata.create_all(bind=database.engine)
+
+app.add_middleware(CORSMiddleware, allow_origins=["https://basvuru.okul.edu.tr"],
+    allow_methods=["GET","POST","PATCH"], allow_headers=["*"])
+
+# --- Schemas (Pydantic validasyon = injection + tip guvenligi) ---
+class ApplicationIn(BaseModel):
+    fullName: str = Field(min_length=3, max_length=80)
+    schoolNo: str = Field(max_length=20)
+    grade: str
+    email: EmailStr
+    phone: str = Field(pattern=r"^0?5\\d{9}$")
+    roles: list[str] = Field(min_length=1)
+    skills: list[str] = Field(min_length=2, max_length=10)
+    level: int = Field(ge=1, le=5)
+    motivation: str = Field(min_length=50, max_length=1000)
+    projectIdea: str | None = Field(default=None, max_length=600)
+
+class StatusUpdate(BaseModel):
+    status: str = Field(pattern=r"^(pending|accepted|rejected|waitlist)$")
+    score: int | None = Field(default=None, ge=0, le=10)
+    notes: str | None = Field(default=None, max_length=1000)
+
+def get_db():
+    db = database.SessionLocal()
+    try: yield db
+    finally: db.close()
+
+# --- Public: basvuru olustur (ORM = SQL injection korumali) ---
+@app.post("/api/applications", status_code=201)
+@limiter.limit("3/hour")
+def create_application(data: ApplicationIn, db: Session = Depends(get_db)):
+    exists = db.query(models.Application).filter(
+        (models.Application.email == data.email) |
+        (models.Application.schoolNo == data.schoolNo)).first()
+    if exists:
+        raise HTTPException(409, "Bu e-posta veya okul no ile kayit mevcut.")
+    app_id = auth.generate_app_id()  # NSAC26-XXXX
+    row = models.Application(id=app_id, **data.model_dump(), status="pending")
+    db.add(row); db.commit()
+    # NOT: WhatsApp OTOMATIK gonderilmez. Koordinantor manuel iletir.
+    return {"id": app_id, "status": "pending"}
+
+# --- Admin: giris (bcrypt + JWT) ---
+@app.post("/api/auth/login")
+def login(body: auth.LoginIn, db: Session = Depends(get_db)):
+    user = auth.authenticate(db, body.email, body.password)  # bcrypt.verify
+    if not user:
+        auth.register_failed_attempt(body.email)  # 5x -> kilit
+        raise HTTPException(401, "E-posta veya parola hatali.")
+    token = auth.create_token({"sub": user.email, "role": user.role})
+    return {"access_token": token, "expires_in": 7200}
+
+# --- Admin: liste + durum guncelle (JWT zorunlu) ---
+@app.get("/api/admin/applications")
+def list_apps(status: str | None = None, q: str | None = None,
+    admin=Depends(auth.require_admin), db: Session = Depends(get_db)):
+    query = db.query(models.Application)
+    if status: query = query.filter(models.Application.status == status)
+    if q: query = query.filter(models.Application.fullName.ilike(f"%{q}%"))
+    return query.order_by(models.Application.createdAt.desc()).all()
+
+@app.patch("/api/admin/applications/{app_id}")
+def update_app(app_id: str, body: StatusUpdate,
+    admin=Depends(auth.require_admin), db: Session = Depends(get_db)):
+    row = db.query(models.Application).filter_by(id=app_id).first()
+    if not row: raise HTTPException(404, "Basvuru bulunamadi.")
+    row.status = body.status
+    if body.score is not None: row.score = body.score
+    if body.notes is not None: row.notes = body.notes
+    db.commit()
+    return {"ok": True, "id": app_id, "status": body.status}
+`;
+const CODE_FRONTEND=`// frontend/lib/api.ts - Next.js API istemcisi (ozet)
+const API = process.env.NEXT_PUBLIC_API_URL!; // https://api.okul.edu.tr
+
+type ApplyPayload = {
+  fullName: string; schoolNo: string; grade: string;
+  email: string; phone: string; department: string;
+  roles: string[]; skills: string[]; level: number;
+  github?: string; motivation: string; projectIdea?: string;
+  teamPref: "solo" | "with-friends"; friends?: string;
+};
+
+// XSS onlemi: gonderim oncesi temel temizlik
+export function sanitize(v: string, max = 2000): string {
+  return v.replace(/<script[\\s\\S]*?<\\/script>/gi, "")
+          .replace(/[<>]/g, "").trim().slice(0, max);
+}
+
+export async function submitApplication(p: ApplyPayload) {
+  const res = await fetch(API + "/api/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...p,
+      fullName: sanitize(p.fullName, 80),
+      motivation: sanitize(p.motivation, 1000),
+    }),
+  });
+  if (res.status === 409) throw new Error("Mukerrer kayit: bu bilgiyle basvuru mevcut.");
+  if (res.status === 429) throw new Error("Cok fazla deneme. 1 saat sonra tekrar dene.");
+  if (!res.ok) throw new Error("Basvuru gonderilemedi.");
+  return res.json() as Promise<{ id: string; status: string }>;
+}
+
+export async function queryStatus(id: string, email: string) {
+  const res = await fetch(
+    API + "/api/applications/" + encodeURIComponent(id) +
+    "?email=" + encodeURIComponent(email));
+  if (!res.ok) throw new Error("Kayit bulunamadi.");
+  return res.json();
+}
+
+// Admin istekleri: JWT Authorization header ile
+export function adminHeaders(): HeadersInit {
+  const token = sessionStorage.getItem("nsac_token");
+  return { "Content-Type": "application/json", Authorization: "Bearer " + token };
+}
+
+export async function adminList(params: string) {
+  const res = await fetch(API + "/api/admin/applications?" + params,
+    { headers: adminHeaders() });
+  if (res.status === 401) throw new Error("Oturum suresi doldu.");
+  return res.json();
+}
+
+export async function adminUpdate(id: string, body: object) {
+  const res = await fetch(API + "/api/admin/applications/" + id, {
+    method: "PATCH", headers: adminHeaders(), body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Guncelleme basarisiz.");
+  return res.json();
+}
+`;
+function copyCode(id){const t=document.getElementById(id).textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Panoya kopyalandı.","success")).catch(()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("Panoya kopyalandı.","success")})}
+function downloadCode(id,name){dl(new Blob([document.getElementById(id).textContent],{type:"text/plain"}),name);toast(name+" indirildi.","success")}
+
+/* ═════════ SETTINGS ═════════ */
+function fillSettings(){const s=getStore().settings;$("#set-schoolName").value=s.schoolName;const d=new Date(s.deadline);$("#set-deadline").value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);$("#set-maxTeam").value=s.maxTeamSize;$("#set-openToggle").classList.toggle("on",s.applicationsOpen);
+ const u=getStore().users[0];if(u)$("#currentHashDisplay").textContent=u.passwordHash.slice(0,32)+"..."}
+function saveSettings(){const s=getStore();s.settings.schoolName=clean($("#set-schoolName").value,80)||"Okul";const dlv=$("#set-deadline").value;if(dlv)s.settings.deadline=new Date(dlv).toISOString();s.settings.maxTeamSize=Math.min(6,Math.max(2,parseInt($("#set-maxTeam").value)||6));s.settings.applicationsOpen=$("#set-openToggle").classList.contains("on");saveStore(s);addLog("Ayarlar güncellendi","Deadline/kontenjan");checkDeadline();tickCountdown();toast("Ayarlar kaydedildi.","success")}
+function changePassword(){const cur=$("#pass-current").value,nw=$("#pass-new").value,cf=$("#pass-confirm").value;const s=getStore();const u=s.users[0];
+ if(hashPass(cur)!==u.passwordHash){toast("Mevcut parola hatalı.","error");return}
+ if(nw.length<8){toast("Yeni parola en az 8 karakter olmalı.","warn");return}
+ if(nw!==cf){toast("Parolalar eşleşmiyor.","error");return}
+ u.passwordHash=hashPass(nw);saveStore(s);addLog("Parola değiştirildi","Admin parolası güncellendi");$("#pass-current").value=$("#pass-new").value=$("#pass-confirm").value="";fillSettings();toast("Parola güncellendi. Yeni hash üretildi.","success")}
+function seedMoreDemo(){const s=getStore();const extra=seedApplications().slice(0,5).map(x=>({...x,id:genId(),email:"yeni"+Math.floor(Math.random()*9999)+"@okul.edu.tr",schoolNo:String(3000+Math.floor(Math.random()*999)),status:"pending",score:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}));s.applications=s.applications.concat(extra);saveStore(s);addLog("Demo veri eklendi","5 yeni başvuru");refreshAllAdmin();toast("5 demo başvuru eklendi.","success")}
+function backupStore(){dl(new Blob([JSON.stringify(getStore(),null,2)],{type:"application/json"}),"nsac26-yedek-"+Date.now()+".json");toast("Tam yedek indirildi.","success")}
+function wipeAll(){showConfirm("TÜM VERİ SİLİNSİN Mİ?","Başvurular, ekipler ve loglar kalıcı olarak silinecek. Bu işlem geri alınamaz!","Evet, Hepsini Sil","btn-danger",()=>{const s=getStore();s.applications=[];s.teams=[];s.logs=[];saveStore(s);addLog("Veri sıfırlama","Tüm kayıtlar silindi");refreshAllAdmin();renderTeams();updatePublicStats();toast("Tüm veriler silindi.","success")})}
+
+/* ═════════ INIT & EVENTS ═════════ */
+document.addEventListener("DOMContentLoaded",()=>{
+ initStore();renderRolePills();renderSkillTags();renderRoleCards();renderFAQ();renderMarquee();initStars();
+ $("#code-readme").textContent=CODE_README;$("#code-env").textContent=CODE_ENV;$("#code-backend").textContent=CODE_BACKEND;$("#code-frontend").textContent=CODE_FRONTEND;
+ if(window.Chart){Chart.defaults.color="#7C8DB0";Chart.defaults.borderColor="rgba(148,163,184,.08)"}
+ updatePublicStats();checkDeadline();tickCountdown();setInterval(tickCountdown,1000);
+ setInterval(()=>{if(!$("#dashboardView").classList.contains("hidden")&&!currentAdmin()){showPublic();toast("Oturum süresi doldu. Tekrar giriş yap.","warn")}},30000);
+ // reveal
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("visible")}),{threshold:.1});
+ $$(".reveal").forEach(el=>io.observe(el));
+ // nav
+ $("#mobileMenuBtn").addEventListener("click",()=>$("#mobileMenu").classList.toggle("hidden"));
+ $$("#mobileMenu a").forEach(a=>a.addEventListener("click",()=>$("#mobileMenu").classList.add("hidden")));
+ addEventListener("scroll",()=>{$("#publicNav").style.background=scrollY>30?"rgba(6,11,31,.92)":""});
+ // pills
+ $("#rolePills").addEventListener("click",e=>{if(e.target.classList.contains("pill")){e.target.classList.toggle("active");updateProgress()}});
+ $$("[data-skill]").forEach(b=>b.addEventListener("click",()=>addSkill(b.dataset.skill)));
+ $("#skillAdd").addEventListener("click",()=>addSkill($("#skillInput").value));
+ $("#skillInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addSkill($("#skillInput").value)}});
+ const lvl=$("#f-level");const updLvl=()=>{const v=parseInt(lvl.value);$("#f-levelLabel").textContent=LEVEL_NAMES[v];$("#f-levelValue").textContent=v+" / 5";lvl.style.setProperty("--p",((v-1)/4*100)+"%")};lvl.addEventListener("input",updLvl);updLvl();
+ $("#f-motivation").addEventListener("input",e=>{$("#motivationCount").textContent=e.target.value.length+" / 1000";updateProgress()});
+ $("#f-projectIdea").addEventListener("input",e=>{$("#projectCount").textContent=e.target.value.length+" / 600"});
+ $$('input[name="teamPref"]').forEach(r=>r.addEventListener("change",()=>{$("#f-friendsWrap").classList.toggle("hidden",document.querySelector('input[name="teamPref"]:checked').value!=="with-friends")}));
+ ["f-name","f-schoolNo","f-email","f-phone","f-grade","f-department"].forEach(id=>document.getElementById(id).addEventListener("input",updateProgress));
+ // submit
+ $("#applicationForm").addEventListener("submit",e=>{e.preventDefault();handleSubmit()});
+ // status
+ $("#status-form").addEventListener("submit",e=>{e.preventDefault();handleStatusQuery()});
+ // login
+ $("#login-togglePass").addEventListener("click",()=>{const p=$("#login-password");const show=p.type==="password";p.type=show?"text":"password";$("#login-togglePass").textContent=show?"GİZLE":"GÖSTER"});
+ $("#loginForm").addEventListener("submit",e=>{e.preventDefault();handleLogin()});
+ // sidebar
+ $$(".sidebar-link[data-tab]").forEach(b=>b.addEventListener("click",()=>switchAdminTab(b.dataset.tab)));
+ $("#sidebarToggle").addEventListener("click",()=>{$("#sidebar").classList.remove("-translate-x-full");$("#sidebarOverlay").classList.remove("hidden")});
+ $("#sidebarOverlay").addEventListener("click",()=>{$("#sidebar").classList.add("-translate-x-full");$("#sidebarOverlay").classList.add("hidden")});
+ // table filters
+ $("#app-search").addEventListener("input",e=>{tbl.search=e.target.value;tbl.page=1;renderTable()});
+ $("#filter-status").addEventListener("change",e=>{tbl.status=e.target.value;tbl.page=1;renderTable()});
+ $("#filter-role").addEventListener("change",e=>{tbl.role=e.target.value;tbl.page=1;renderTable()});
+ $("#filter-grade").addEventListener("change",e=>{tbl.grade=e.target.value;tbl.page=1;renderTable()});
+ $("#selectAll").addEventListener("change",e=>{const rows=getFiltered().slice((tbl.page-1)*tbl.perPage,tbl.page*tbl.perPage);if(e.target.checked)rows.forEach(r=>tbl.selected.add(r.id));else rows.forEach(r=>tbl.selected.delete(r.id));renderTable()});
+ $$("th[data-sort]").forEach(th=>th.addEventListener("click",()=>{const k=th.dataset.sort;if(tbl.sortKey===k)tbl.sortDir=tbl.sortDir==="asc"?"desc":"asc";else{tbl.sortKey=k;tbl.sortDir="asc"}renderTable()}));
+ $("#topbarSearch").addEventListener("input",e=>{if(e.target.value.trim()){switchAdminTab("applications");tbl.search=e.target.value;$("#app-search").value=e.target.value;tbl.page=1;renderTable()}});
+ // drawer score
+ $("#d-score").addEventListener("input",e=>{updScoreLabel();e.target.style.setProperty("--p",(e.target.value/10*100)+"%")});
+ // dev tabs
+ $$("[data-dev]").forEach(b=>b.addEventListener("click",()=>{$$("[data-dev]").forEach(x=>x.classList.remove("active"));b.classList.add("active");["readme","env","backend","frontend","security"].forEach(t=>$("#dev-"+t).classList.toggle("hidden",t!==b.dataset.dev))}));
+ // settings
+ $("#set-openToggle").addEventListener("click",()=>$("#set-openToggle").classList.toggle("on"));
+ $("#file-restore").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.applications)throw 0;saveStore(d);refreshAllAdmin();renderTeams();updatePublicStats();checkDeadline();toast("Yedek geri yüklendi.","success")}catch(err){toast("Geçersiz yedek dosyası.","error")}};r.readAsText(f)});
+ // esc
+ addEventListener("keydown",e=>{if(e.key==="Escape"){["statusModal","successModal","confirmModal"].forEach(id=>{if(document.getElementById(id).style.display==="flex")closeModal(id)});if(currentDrawerId)closeDrawer()}});
+ // session resume hint
+ if(currentAdmin())toast("Aktif admin oturumun var. Kilit ikonundan panele dönebilirsin.","info");
+ setTimeout(()=>{const p=$("#preloader");p.style.opacity="0";setTimeout(()=>p.remove(),600)},900);
+});
+function handleSubmit(){
+ if($("#f-website").value){toast("Bot aktivitesi tespit edildi.","error");return}
+ const s=getStore();
+ if(!s.settings.applicationsOpen||new Date(s.settings.deadline)<new Date()){toast("Başvurular kapalı.","error");return}
+ try{const subs=JSON.parse(localStorage.getItem("nsac26_submits")||"[]").filter(t=>Date.now()-t<36e5);if(subs.length>=3){toast("Hız limiti: saatte en fazla 3 başvuru.","error");return}}catch(e){}
+ const name=clean($("#f-name").value,80),schoolNo=clean($("#f-schoolNo").value,20),email=clean($("#f-email").value,100).toLowerCase(),phone=clean($("#f-phone").value,20),grade=$("#f-grade").value,dept=$("#f-department").value,github=clean($("#f-github").value,200),mot=clean($("#f-motivation").value,1000),idea=clean($("#f-projectIdea").value,600),friends=clean($("#f-friends").value,200);
+ const roles=[...document.querySelectorAll("#rolePills .pill.active")].map(p=>p.dataset.role);
+ const level=parseInt($("#f-level").value),teamPref=document.querySelector('input[name="teamPref"]:checked').value;
+ if(name.length<3)return toast("Ad Soyad gir (min. 3 karakter).","warn");
+ if(!schoolNo)return toast("Okul numarası zorunlu.","warn");
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return toast("Geçerli bir e-posta gir.","warn");
+ if(phone.replace(/\D/g,"").length<10)return toast("Geçerli bir telefon gir (10-11 hane).","warn");
+ if(!grade||!dept)return toast("Sınıf ve bölüm seç.","warn");
+ if(!roles.length)return toast("En az 1 rol seç.","warn");
+ if(selectedSkills.length<2)return toast("En az 2 yetenek ekle.","warn");
+ if(mot.length<50)return toast("Motivasyon en az 50 karakter olmalı ("+mot.length+"/50).","warn");
+ if(!$("#f-kvkk").checked)return toast("KVKK onayı zorunlu.","warn");
+ if(s.applications.some(a=>a.email.toLowerCase()===email))return toast("Bu e-posta ile zaten başvuru var. Durumunu sorgulayabilirsin.","error");
+ if(s.applications.some(a=>a.schoolNo===schoolNo))return toast("Bu okul numarası ile zaten başvuru var.","error");
+ $("#submitBtn").disabled=true;$("#submitLabel").textContent="Gönderiliyor...";$("#submitSpin").classList.remove("hidden");
+ setTimeout(()=>{
+  const st=getStore();const app={id:genId(),fullName:name,schoolNo,grade,email,phone,department:dept,roles,skills:[...selectedSkills],level,github,motivation:mot,projectIdea:idea,teamPref,friends:teamPref==="with-friends"?friends:"",status:"pending",score:null,notes:"",createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),reviewedAt:null,reviewedBy:null};
+  st.applications.unshift(app);saveStore(st);
+  try{const subs=JSON.parse(localStorage.getItem("nsac26_submits")||"[]");subs.push(Date.now());localStorage.setItem("nsac26_submits",JSON.stringify(subs))}catch(e){}
+  $("#success-id").textContent=app.id;openModal("successModal");
+  $("#applicationForm").reset();selectedSkills=[];renderSkillTags();$$("#rolePills .pill").forEach(p=>p.classList.remove("active"));$("#f-level").value=3;$("#f-level").dispatchEvent(new Event("input"));$("#motivationCount").textContent="0 / 1000";$("#projectCount").textContent="0 / 600";updateProgress();
+  updatePublicStats();$("#submitBtn").disabled=false;$("#submitLabel").textContent="Başvuruyu Uzaya Gönder";$("#submitSpin").classList.add("hidden");
+ },900);
+}
+function copySuccessId(){const t=$("#success-id").textContent;if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast("Başvuru kodu kopyalandı.","success"))}
+function handleStatusQuery(){
+ const id=clean($("#status-id").value,20).toUpperCase(),email=clean($("#status-email").value,100).toLowerCase();
+ if(!id||!email.includes("@")){$("#status-result").innerHTML=`<div class="text-[13px] bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3.5">Kod ve e-posta gerekli.</div>`;return}
+ const x=getStore().applications.find(a=>a.id.toUpperCase()===id&&a.email.toLowerCase()===email);
+ if(!x){$("#status-result").innerHTML=`<div class="text-[13px] bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3.5">Kayıt bulunamadı. Kod ve e-postayı kontrol et.</div>`;return}
+ const st=STATUS[x.status];
+ $("#status-result").innerHTML=`<div class="rounded-2xl border border-white/10 p-5" style="background:rgba(255,255,255,.03)">
+  <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl flex items-center justify-center font-bold" style="background:${avatarColor(x.fullName)}">${initials(x.fullName)}</div>
+  <div><div class="font-bold">${esc(x.fullName)}</div><div class="font-mono text-[11px] text-slate-500">${esc(x.id)} • ${fmtDate(x.createdAt)}</div></div></div>
+  <div class="mt-4 flex items-center justify-between"><span class="text-sm text-slate-400">Durum:</span><span class="badge ${st.cls}"><span class="dot" style="background:${st.dot}"></span>${st.label}</span></div>
+  <div class="mt-3 text-[12.5px] text-slate-400 leading-relaxed rounded-xl bg-black/30 border border-white/10 p-3">${x.status==="accepted"?"Tebrikler! Koordinatör sana WhatsApp üzerinden manuel olarak ulaşacak. Takım ataman yakında yapılacak.":x.status==="rejected"?"Bu dönem seçilemedin, ancak yedek havuz değerlendirilmeye devam ediyor. İlgin için teşekkürler!":x.status==="waitlist"?"Yedek listendesin. Asil ekipten boşluk olursa WhatsApp ile bilgilendirileceksin.":"Başvurun inceleme sırasında. Karar sonrası WhatsApp ile manuel bilgilendirileceksin."}</div></div>`;
+}
+function handleLogin(){
+ const email=clean($("#login-email").value,100).toLowerCase(),pass=$("#login-password").value;
+ const err=$("#login-error"),att=$("#login-attempts");err.classList.add("hidden");
+ let a=loginAttempts();
+ if(Date.now()<a.lockedUntil){err.textContent="Çok fazla hatalı deneme. "+Math.ceil((a.lockedUntil-Date.now())/60000)+" dk sonra tekrar dene.";err.classList.remove("hidden");return}
+ const u=getStore().users.find(x=>x.email.toLowerCase()===email);
+ if(!u||hashPass(pass)!==u.passwordHash){a.count++;if(a.count>=5){a.lockedUntil=Date.now()+5*60e3;a.count=0;err.textContent="5 hatalı deneme! Hesap 5 dakika kilitlendi."}else{err.textContent="E-posta veya parola hatalı. ("+(5-a.count)+" deneme kaldı)"}setAttempts(a);err.classList.remove("hidden");att.classList.remove("hidden");att.textContent="Güvenlik: denemeler loglanıyor • IP-hash: "+hashPass(email).slice(0,12);return}
+ setAttempts({count:0,lockedUntil:0});
+ sessionStorage.setItem("nsac26_session",JSON.stringify({email:u.email,token:hashPass(email+Date.now()),expiresAt:Date.now()+2*36e5}));
+ $("#login-password").value="";addLog("Admin girişi",u.email+" giriş yaptı");showDashboard();toast("Panele hoş geldin. Oturum 2 saat geçerli.","success");
+}
+</script>
+</body>
+</html>
